@@ -1,0 +1,302 @@
+{
+  "version": 1,
+  "repositories": [
+    {
+      "key": "repo-a",
+      "provider_repository_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "remotes": [
+        "https://dev.azure.com/Contoso/Data%20Platform/_git/Telemetry",
+        "git@ssh.dev.azure.com:v3/Contoso/Data%20Platform/Telemetry",
+        "ssh://git@ssh.dev.azure.com/v3/Contoso/Data%20Platform/Telemetry"
+      ],
+      "expected_identity": "azure-devops:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    },
+    {
+      "key": "repo-b",
+      "provider_repository_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "remotes": [
+        "https://Fabrikam.visualstudio.com/Commerce/_git/Checkout",
+        "https://dev.azure.com/Fabrikam/Commerce/_git/Checkout",
+        "git@ssh.dev.azure.com:v3/Fabrikam/Commerce/Checkout"
+      ],
+      "expected_identity": "azure-devops:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+    }
+  ],
+  "memories": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "repository": "repo-a",
+      "kind": "procedure",
+      "title": "Kusto query best practices",
+      "summary": "Bound every KQL query by time before joins.",
+      "body_markdown": "## Practice\nStart with `where Timestamp > ago(24h)`, project only required columns, then join.",
+      "tags": ["kusto", "kql", "performance"],
+      "lifecycle_status": "active",
+      "approval_status": "approved",
+      "source_commit": "1111111111111111111111111111111111111111"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000002",
+      "repository": "repo-a",
+      "kind": "pitfall",
+      "title": "Kusto cross-cluster join pitfall",
+      "summary": "Filter and summarize the remote side before a cross-cluster join.",
+      "body_markdown": "未经筛选的跨集群 join 会放大数据传输。先过滤时间并 summarize。",
+      "tags": ["kusto", "join"],
+      "lifecycle_status": "active",
+      "approval_status": "approved",
+      "source_commit": "2222222222222222222222222222222222222222"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000003",
+      "repository": "repo-a",
+      "kind": "procedure",
+      "title": "Legacy Kusto query guidance",
+      "summary": "Query the full table and filter afterward.",
+      "body_markdown": "This guidance is intentionally stale.",
+      "tags": ["kusto"],
+      "lifecycle_status": "superseded",
+      "approval_status": "approved"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000004",
+      "repository": "repo-a",
+      "kind": "convention",
+      "title": "KQL function naming",
+      "summary": "Use the `crm_` prefix for stored KQL functions.",
+      "body_markdown": "Stored functions owned by this repository use snake_case names beginning with `crm_`.",
+      "tags": ["kusto", "naming"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000005",
+      "repository": "repo-a",
+      "kind": "decision",
+      "title": "Telemetry retention",
+      "summary": "Keep hot telemetry for 30 days.",
+      "body_markdown": "## Decision\nUse a 30-day hot retention period and archive older data.",
+      "tags": ["retention", "architecture"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000006",
+      "repository": "repo-a",
+      "kind": "pitfall",
+      "title": "Do not log cluster credentials",
+      "summary": "Kusto credentials must never enter diagnostic logs.",
+      "body_markdown": "Redact authorization headers and connection strings.",
+      "tags": ["security", "kusto"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000007",
+      "repository": "repo-a",
+      "kind": "procedure",
+      "title": "Investigate ingestion lag",
+      "summary": "Compare source timestamps with ingestion_time().",
+      "body_markdown": "Use `extend lag = ingestion_time() - Timestamp` and summarize percentiles.",
+      "tags": ["kusto", "operations"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000008",
+      "repository": "repo-a",
+      "kind": "convention",
+      "title": "Dashboard time range",
+      "summary": "Dashboards default to the last 24 hours.",
+      "body_markdown": "Every workbook must expose a time-range parameter and default to 24 hours.",
+      "tags": ["dashboard"],
+      "lifecycle_status": "archived",
+      "approval_status": "approved"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000009",
+      "repository": "repo-a",
+      "kind": "procedure",
+      "title": "Kusto 查询检查清单",
+      "summary": "限定时间、减少列、最后排序。",
+      "body_markdown": "查询 Kusto 时先限定时间范围，只投影需要的列，并避免对完整结果集排序。",
+      "tags": ["kusto", "中文"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000010",
+      "repository": "repo-a",
+      "kind": "pitfall",
+      "title": "Pending materialized-view warning",
+      "summary": "A possible issue with materialized views.",
+      "body_markdown": "This candidate has not been reviewed.",
+      "tags": ["kusto"],
+      "lifecycle_status": "active",
+      "approval_status": "pending"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000001",
+      "repository": "repo-b",
+      "kind": "decision",
+      "title": "Checkout idempotency keys",
+      "summary": "Every payment attempt requires an idempotency key.",
+      "body_markdown": "Persist the key with the payment result for 24 hours.",
+      "tags": ["payments", "reliability"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000002",
+      "repository": "repo-b",
+      "kind": "procedure",
+      "title": "Retry transient payment failures",
+      "summary": "Use bounded exponential backoff for transient gateway errors.",
+      "body_markdown": "Retry at most three times with jitter; never retry a hard decline.",
+      "tags": ["payments", "retry"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000003",
+      "repository": "repo-b",
+      "kind": "pitfall",
+      "title": "Do not retry hard declines",
+      "summary": "A declined card is not a transient transport error.",
+      "body_markdown": "Return the decline result without scheduling another charge.",
+      "tags": ["payments", "retry"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000004",
+      "repository": "repo-b",
+      "kind": "convention",
+      "title": "Currency amount representation",
+      "summary": "Represent money in minor units as integers.",
+      "body_markdown": "Never use binary floating point for currency.",
+      "tags": ["money", "types"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000005",
+      "repository": "repo-b",
+      "kind": "decision",
+      "title": "Gateway timeout",
+      "summary": "Use a five-second payment gateway timeout.",
+      "body_markdown": "The old ten-second timeout has been replaced.",
+      "tags": ["payments", "timeout"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000006",
+      "repository": "repo-b",
+      "kind": "decision",
+      "title": "Old gateway timeout",
+      "summary": "Use a ten-second payment gateway timeout.",
+      "body_markdown": "This decision is superseded.",
+      "tags": ["payments", "timeout"],
+      "lifecycle_status": "superseded",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000007",
+      "repository": "repo-b",
+      "kind": "procedure",
+      "title": "Reconcile settlement files",
+      "summary": "Import each settlement file exactly once.",
+      "body_markdown": "Hash the file before import and retain the reconciliation report.",
+      "tags": ["payments", "settlement"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000008",
+      "repository": "repo-b",
+      "kind": "pitfall",
+      "title": "Legacy webhook signature",
+      "summary": "An obsolete signature-validation warning.",
+      "body_markdown": "This memory is archived.",
+      "tags": ["webhook", "security"],
+      "lifecycle_status": "archived",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000009",
+      "repository": "repo-b",
+      "kind": "convention",
+      "title": "Payment correlation IDs",
+      "summary": "Propagate one correlation ID through checkout and gateway calls.",
+      "body_markdown": "Use the incoming request ID unless the edge did not provide one.",
+      "tags": ["observability", "payments"],
+      "lifecycle_status": "active",
+      "approval_status": "approved"
+    },
+    {
+      "id": "b0000000-0000-4000-8000-000000000010",
+      "repository": "repo-b",
+      "kind": "procedure",
+      "title": "Pending refund runbook",
+      "summary": "A draft runbook for manual refunds.",
+      "body_markdown": "This candidate has not been approved.",
+      "tags": ["refund"],
+      "lifecycle_status": "active",
+      "approval_status": "pending"
+    }
+  ],
+  "acceptance_cases": [
+    {
+      "name": "azure-https-ssh-equivalence",
+      "assertion": "Every remote listed for one repository resolves to that repository's expected_identity."
+    },
+    {
+      "name": "repo-a-kusto-recall",
+      "repository": "repo-a",
+      "query": "如何查询 Kusto 的最佳实践",
+      "must_include": [
+        "a0000000-0000-4000-8000-000000000001",
+        "a0000000-0000-4000-8000-000000000009"
+      ],
+      "must_exclude": [
+        "a0000000-0000-4000-8000-000000000003",
+        "a0000000-0000-4000-8000-000000000010"
+      ]
+    },
+    {
+      "name": "repo-b-retry-recall",
+      "repository": "repo-b",
+      "query": "payment retry policy",
+      "must_include": [
+        "b0000000-0000-4000-8000-000000000002",
+        "b0000000-0000-4000-8000-000000000003"
+      ]
+    },
+    {
+      "name": "cross-repository-isolation",
+      "repository": "repo-b",
+      "query": "Kusto",
+      "must_include": [],
+      "must_exclude_repository": "repo-a"
+    },
+    {
+      "name": "known-id-does-not-bypass-scope",
+      "repository": "repo-b",
+      "get_memory_id": "a0000000-0000-4000-8000-000000000001",
+      "expected_error": "NOT_FOUND"
+    },
+    {
+      "name": "pending-not-searchable",
+      "candidate_ids": [
+        "a0000000-0000-4000-8000-000000000010",
+        "b0000000-0000-4000-8000-000000000010"
+      ],
+      "assertion": "Pending candidates never appear in default memory search."
+    },
+    {
+      "name": "exact-approval",
+      "assertion": "The approved payload must byte-for-byte match the normalized candidate revision shown for review; decide_memory_candidate cannot carry replacement content."
+    }
+  ]
+}

@@ -1,0 +1,438 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "manifestVersion": 1,
+  "status": "m0-frozen",
+  "errorSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["code", "message"],
+    "properties": {
+      "code": {
+        "enum": [
+          "INVALID_REMOTE",
+          "UNSUPPORTED_REMOTE",
+          "REPOSITORY_RESOLUTION_REQUIRED",
+          "REPOSITORY_RESOLUTION_FAILED",
+          "UNAUTHENTICATED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "REVISION_CONFLICT",
+          "INVALID_CANDIDATE_STATE",
+          "VALIDATION_ERROR",
+          "DEPENDENCY_UNAVAILABLE",
+          "INTERNAL_ERROR"
+        ]
+      },
+      "message": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "resolve_repository",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["remote_url"],
+        "properties": {
+          "remote_url": {
+            "$ref": "#/$defs/remoteUrl"
+          }
+        }
+      }
+    },
+    {
+      "name": "search_memories",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["remote_url", "query"],
+        "properties": {
+          "remote_url": {
+            "$ref": "#/$defs/remoteUrl"
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "kinds": {
+            "type": "array",
+            "uniqueItems": true,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/$defs/memoryKind"
+            }
+          },
+          "tags": {
+            "$ref": "#/$defs/tags"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 5
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_memory",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["remote_url", "memory_id"],
+        "properties": {
+          "remote_url": {
+            "$ref": "#/$defs/remoteUrl"
+          },
+          "memory_id": {
+            "$ref": "#/$defs/uuid"
+          }
+        }
+      }
+    },
+    {
+      "name": "propose_memory",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/createProposal"
+          },
+          {
+            "$ref": "#/$defs/supersedeProposal"
+          },
+          {
+            "$ref": "#/$defs/archiveProposal"
+          }
+        ]
+      }
+    },
+    {
+      "name": "list_memory_candidates",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["remote_url"],
+        "properties": {
+          "remote_url": {
+            "$ref": "#/$defs/remoteUrl"
+          },
+          "status": {
+            "enum": ["pending", "approved", "rejected", "expired"],
+            "default": "pending"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50
+          }
+        }
+      }
+    },
+    {
+      "name": "decide_memory_candidate",
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "remote_url",
+          "candidate_id",
+          "expected_revision",
+          "decision"
+        ],
+        "properties": {
+          "remote_url": {
+            "$ref": "#/$defs/remoteUrl"
+          },
+          "candidate_id": {
+            "$ref": "#/$defs/uuid"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "decision": {
+            "enum": ["approve", "reject"]
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "remoteUrl": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "memoryKind": {
+      "enum": ["decision", "pitfall", "convention", "procedure"]
+    },
+    "tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      }
+    },
+    "sourceFields": {
+      "type": "object",
+      "properties": {
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{7,64}$"
+        },
+        "source_branch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "source_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2000
+        }
+      }
+    },
+    "memoryContentProperties": {
+      "type": "object",
+      "required": ["kind", "title", "summary", "body_markdown"],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/memoryKind"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "body_markdown": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{7,64}$"
+        },
+        "source_branch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "source_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2000
+        }
+      }
+    },
+    "createProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "remote_url",
+        "operation",
+        "kind",
+        "title",
+        "summary",
+        "body_markdown"
+      ],
+      "properties": {
+        "remote_url": {
+          "$ref": "#/$defs/remoteUrl"
+        },
+        "operation": {
+          "const": "create"
+        },
+        "kind": {
+          "$ref": "#/$defs/memoryKind"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "body_markdown": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{7,64}$"
+        },
+        "source_branch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "source_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2000
+        }
+      }
+    },
+    "supersedeProposal": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/memoryContentProperties"
+        },
+        {
+          "type": "object",
+          "required": [
+            "remote_url",
+            "operation",
+            "target_memory_id",
+            "reason"
+          ],
+          "properties": {
+            "remote_url": {
+              "$ref": "#/$defs/remoteUrl"
+            },
+            "operation": {
+              "const": "supersede"
+            },
+            "target_memory_id": {
+              "$ref": "#/$defs/uuid"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "archiveProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "remote_url",
+        "operation",
+        "target_memory_id",
+        "reason"
+      ],
+      "properties": {
+        "remote_url": {
+          "$ref": "#/$defs/remoteUrl"
+        },
+        "operation": {
+          "const": "archive"
+        },
+        "target_memory_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    }
+  }
+}
