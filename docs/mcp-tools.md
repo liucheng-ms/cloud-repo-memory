@@ -1,8 +1,37 @@
 # MCP tool contracts
 
+## Current scope: local file-backed MVP
+
+[ADR 0002](adr/0002-onedrive-local-memory.md) selects a smaller, read-only first
+implementation. Its intended tools are:
+
+| Tool | Intended behavior |
+| --- | --- |
+| `list_memory_index` | Generate a Markdown directory from eligible notes' metadata within the configured project. |
+| `get_memory` | Read the full note identified by a stable memory ID within that project. |
+
+These are behavioral requirements, not frozen JSON Schemas. Project selection,
+ID validation, result envelopes, and explicit failure codes must be specified
+in a separate versioned local-MVP contract before implementing the tools.
+The MVP must not be presented as conforming to the existing M0 manifest.
+
+Initial scope uses a configured project-to-local-directory mapping. Automatic
+remote-to-GUID resolution, search, mutation, approval, database storage, and
+remote HTTP deployment are deferred. Local mappings are not proof of Git
+checkout identity, and note status metadata is not proof of human approval.
+
+The existing manifest and acceptance corpus remain unchanged as the historical
+M0 baseline. In particular, the synthetic pilot's `kst-*` IDs are not M0 UUIDs,
+and its `repository` metadata is not a verified Azure DevOps identity.
+
+## Original M0 contract reference
+
+The remainder of this document describes the original M0 design, not the
+selected local-MVP interface.
+
 All tools require a repository remote. The server resolves it to an internal repository ID before application logic runs. Knowing another repository's memory or candidate ID never bypasses scope checks.
 
-The normative M0 artifact is [`contracts/mcp-tools.manifest.json`](../contracts/mcp-tools.manifest.json). This document explains its intent; implementations must conform to the frozen JSON Schemas and error codes in that manifest.
+The normative M0 artifact is [`contracts/mcp-tools.manifest.json`](../contracts/mcp-tools.manifest.json). Implementations claiming M0 conformance must conform to the frozen JSON Schemas and error codes in that manifest.
 
 ## `resolve_repository`
 

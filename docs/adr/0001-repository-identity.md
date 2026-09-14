@@ -3,6 +3,14 @@
 - Status: Accepted
 - Date: 2026-09-04
 
+## Scope update: 2026-09-14
+
+This decision remains the original M0 identity design.
+[ADR 0002](0002-onedrive-local-memory.md) defers automatic Azure DevOps resolution
+and database-backed aliases for the first local, file-backed MVP. That MVP uses
+explicit local project mappings and does not claim verified provider identity
+or conformance to this ADR. The rules below are not implemented by the samples.
+
 ## Context
 
 The same Azure DevOps repository can be cloned with HTTPS, legacy Visual Studio, SCP-like SSH, or URI-form SSH remotes. Names may later change. Using a normalized URL as the durable key would create duplicate memory or lose continuity after a rename.
