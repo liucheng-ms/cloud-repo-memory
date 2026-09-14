@@ -2,6 +2,21 @@
 
 Validated on 2026-09-04 against the current public documentation and source of Basic Memory and LongMemory. The checks below inspect the shipped MCP surfaces and server-side enforcement points; they are not marketing-feature comparisons.
 
+## Scope update: 2026-09-14
+
+This document is the historical M0 comparison, not a current market survey or
+evidence that the new MVP has unique capabilities. The project now prioritizes
+a personal learning implementation with company-controlled file storage.
+[ADR 0002](adr/0002-onedrive-local-memory.md) selects a OneDrive-backed local
+MCP MVP and defers the original control-plane requirements.
+
+Basic Memory also offers a local, self-hosted path; using its hosted cloud is
+not required. The choice to build a smaller implementation is not evidence that
+existing local products cannot solve the same need. The
+[two-agent baseline](../validation/samples/kusto-memory/baseline-results.md)
+evaluated synthetic Markdown answers, not Basic Memory, LongMemory, cloud
+sharing, or the five M0 acceptance checks below.
+
 ## Decision
 
 Continue with a narrow repository control plane. Do not build a general memory engine.

@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "synthetic": true,
+  "repository": "sample-telemetry",
+  "agent_input_directory": "agent-input",
+  "evaluator_only": true,
+  "cases": [
+    {
+      "id": "latency-paraphrase",
+      "question": "Production users in scope-demo say requests have become slow. Where should I query, and how do I calculate p95 per operation in five-minute buckets over the last 30 minutes?",
+      "required_memory_ids": ["kst-001", "kst-002"],
+      "required_facts": [
+        "Use cluster alias sample-prod-observe and database TelemetryProd.",
+        "Query RequestCompletedV2 with a last-30-minutes Timestamp filter, Environment prod, and ScopeId scope-demo.",
+        "Calculate percentile(DurationMs, 95), grouped by OperationName and bin(Timestamp, 5m).",
+        "DurationMs is already milliseconds."
+      ],
+      "forbidden_claims": [
+        "Use RequestLatency for current latency metrics.",
+        "Multiply DurationMs by 1000 to get milliseconds.",
+        "The query establishes the root cause of latency."
+      ]
+    },
+    {
+      "id": "code-to-log-correlation",
+      "question": "RequestCompletionEmitter.cs recorded production request req-demo-42 in scope-demo within the last 30 minutes. Which table contains that completion record, and where do I find its diagnostic messages?",
+      "required_memory_ids": ["kst-003"],
+      "required_facts": [
+        "RequestCompletionEmitter.cs writes to RequestCompletedV2.",
+        "Diagnostic messages are in ApplicationTraceV3.",
+        "Correlate using RequestId req-demo-42 with Environment prod, ScopeId scope-demo, and the time window."
+      ],
+      "forbidden_claims": [
+        "Diagnostic messages are stored in RequestCompletedV2.",
+        "RequestId alone is sufficient without environment, scope, or time filters."
+      ]
+    },
+    {
+      "id": "missing-recent-event",
+      "question": "A production event in scope-demo was emitted 30 seconds ago, but I cannot find it in RequestCompletedV2. Does that prove the emitter failed? How should I check?",
+      "required_memory_ids": ["kst-001", "kst-004"],
+      "required_facts": [
+        "Verify sample-prod-observe, TelemetryProd, Environment prod, and ScopeId scope-demo.",
+        "The usual visibility window is two minutes, not a guarantee; recheck after that window.",
+        "ingestion_time() compared with Timestamp can estimate lag for arrived rows only.",
+        "Absence does not prove emitter failure; persistent absence requires investigation."
+      ],
+      "forbidden_claims": [
+        "The emitter definitely failed.",
+        "Every event is guaranteed to arrive within two minutes.",
+        "The lag query measures events that have not arrived.",
+        "An empty lag-query result proves ingestion is healthy."
+      ]
+    },
+    {
+      "id": "historical-data",
+      "question": "I cannot find a production request from 45 days ago. Does that mean it never happened? Give me the archive location if it is documented.",
+      "required_memory_ids": ["kst-005"],
+      "required_facts": [
+        "Production retention is 30 days for RequestCompletedV2 and ApplicationTraceV3.",
+        "A 45-day-old request is outside that retention period; absence does not prove it never happened.",
+        "No archive location or restore procedure is documented; ask the project owner."
+      ],
+      "forbidden_claims": [
+        "A specific archive URL, storage account, or container is known.",
+        "Recovery is guaranteed.",
+        "The request never happened."
+      ]
+    },
+    {
+      "id": "missing-scope",
+      "question": "I want to investigate latency for one workload in staging over the last 30 minutes, but I do not know its scope ID. Which database and table should I use, and what information is still needed?",
+      "required_memory_ids": ["kst-001", "kst-002"],
+      "required_facts": [
+        "Use sample-stage-observe and TelemetryStage.",
+        "Use RequestCompletedV2, Environment stage, and a last-30-minutes Timestamp filter.",
+        "Ask for the workload ScopeId; do not assume scope-demo applies."
+      ],
+      "forbidden_claims": [
+        "Use TelemetryProd for this staging investigation.",
+        "scope-demo is known to be the requested workload.",
+        "Environment stage replaces the need for a scope filter."
+      ]
+    },
+    {
+      "id": "unknown-topic",
+      "question": "What is this project's Redis eviction policy, and which dashboard reports its cache hit rate?",
+      "required_memory_ids": [],
+      "required_facts": [
+        "The supplied memory does not document the project's Redis eviction policy or cache-hit dashboard.",
+        "Request an appropriate source or clarification instead of inventing project-specific facts."
+      ],
+      "forbidden_claims": [
+        "A particular eviction policy is established project knowledge.",
+        "A specific cache dashboard URL or name is documented."
+      ]
+    }
+  ]
+}
