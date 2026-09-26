@@ -292,3 +292,19 @@ remain blocked on reviewed models/settings, tools/hooks/instructions exposure,
 an enforced evaluator boundary or externally held expectations, and explicit
 launch/content-capture approval. No global configuration, credentials, real
 knowledge, client installation or model sessions are changed by preparation.
+
+### Coordinator review: client kit ready, model runs blocked
+
+The coordinator integrated the client kit, reviewed the generator and its
+non-executable recipes, and reproduced all eight preparation tests, including
+an SDK-only subprocess check over the five generated notes. This accepts the
+preparation deliverable, not either real coding-client run.
+
+The next user decision is the trial environment. An approved isolated
+environment with no evaluator rubric or inherited private instructions supports
+a scored evaluation. A current-profile synthetic smoke test may instead be
+chosen explicitly, but must keep leakage, profile isolation and retrieval
+acceptance unverified; it cannot become a passing benchmark by relabeling it.
+In either mode, exact models and content-bearing local trace capture require
+review before launch. Do not enable telemetry, alter global settings, or start
+coding clients as part of preparation.
