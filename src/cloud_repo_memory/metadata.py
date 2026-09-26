@@ -7,6 +7,7 @@ from typing import Literal, TypedDict
 
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
+from ruamel.yaml.resolver import VersionedResolver
 from ruamel.yaml.tokens import AliasToken, AnchorToken, KeyToken, ScalarToken, TagToken
 
 MAX_FRONTMATTER = 8192
@@ -15,6 +16,23 @@ FIELDS = ("schema_version", "id", "project", "title", "summary", "read_when",
           "status", "approval")
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z", re.ASCII)
 VERSION = re.compile(r"sha256:[0-9a-f]{64}\Z", re.ASCII)
+
+# YAML 1.2.2 section 10.3.2, in resolution order. The library's version flag
+# alone still enables non-Core binary, underscore and timestamp resolution.
+_CORE_RESOLVERS = {None: [
+    ("tag:yaml.org,2002:null", re.compile(r"(?:null|Null|NULL|~|)\Z")),
+    ("tag:yaml.org,2002:bool", re.compile(r"(?:true|True|TRUE|false|False|FALSE)\Z")),
+    ("tag:yaml.org,2002:int", re.compile(r"(?:[-+]?[0-9]+|0o[0-7]+|0x[0-9a-fA-F]+)\Z")),
+    ("tag:yaml.org,2002:float", re.compile(
+        r"(?:[-+]?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+]?[0-9]+)?"
+        r"|[-+]?\.(?:inf|Inf|INF)|\.(?:nan|NaN|NAN))\Z")),
+]}
+
+
+class CoreResolver(VersionedResolver):
+    @property
+    def versioned_resolver(self) -> dict[None, list[tuple[str, re.Pattern[str]]]]:
+        return _CORE_RESOLVERS
 
 
 class Metadata(TypedDict):
@@ -82,6 +100,7 @@ def parse(data: bytes, project: str) -> Note:
         text = data[start:end].decode("utf-8")
         body = data[body_start:].decode("utf-8")
         yaml = YAML(typ="safe", pure=True)
+        yaml.Resolver = CoreResolver
         yaml.version = (1, 2)
         yaml.allow_duplicate_keys = False
         key = False
@@ -94,7 +113,7 @@ def parse(data: bytes, project: str) -> Note:
         if any(line.startswith("%") for line in text.splitlines()):
             raise SourceError("INVALID_METADATA")
         value = yaml.load(text)
-    except (UnicodeError, YAMLError, ValueError, RecursionError):
+    except (UnicodeError, YAMLError, ValueError, RecursionError, OverflowError):
         raise SourceError("INVALID_METADATA") from None
     return Note(validate_metadata(value, project), body, version(data), len(data))
 

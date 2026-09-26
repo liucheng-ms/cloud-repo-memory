@@ -1,6 +1,7 @@
 import itertools
 import json
 import os
+from contextlib import nullcontext
 from unittest.mock import patch
 
 import pytest
@@ -175,6 +176,33 @@ def test_invalid_ineligible_blocks_project_and_collects_duplicates(fixture, proj
     result = check(store.get_memory("sample-telemetry", "note-001"), "get", "INVALID_METADATA")
     assert {d["code"] for d in result["error"]["diagnostics"]} == {
         "DUPLICATE_ID", "INVALID_METADATA"}
+
+
+@pytest.mark.parametrize("unavailable", [False, True])
+def test_unicode_overflow_collects_other_candidate_diagnostics(fixture, project, unavailable):
+    root, store = project
+    fixture.file(root / "overflow.md", source("overflow").replace(
+        b'"Synthetic title"', br'"\UFFFFFFFF"'))
+    fixture.file(root / "invalid.md", source("invalid", title=" "))
+    fixture.file(root / "first.md", source("duplicate"))
+    fixture.file(root / "second.md", source("duplicate"))
+    path = fixture.file(root / "available.md", source("available"))
+    with path.open("r+b") if unavailable else nullcontext():
+        for tool, result in (
+            ("list", store.list_memory_index("sample-telemetry")),
+            ("get", store.get_memory("sample-telemetry", "available")),
+        ):
+            check(result, tool, "FILE_UNAVAILABLE" if unavailable else "INVALID_METADATA")
+            error = result["error"]
+            diagnostics = error["diagnostics"]
+            assert not error["scan_complete"]
+            assert error["diagnostics_omitted"] == 0
+            assert sum(item["code"] == "INVALID_METADATA" for item in diagnostics) == 2
+            assert sum(item["code"] == "DUPLICATE_ID" for item in diagnostics) == 1
+            assert ("FILE_UNAVAILABLE" in {item["code"] for item in diagnostics}) == unavailable
+            assert diagnostics == sorted(diagnostics, key=lambda item: (
+                item["code"], item.get("memory_id", ""), item.get("field", ""), item["message"]))
+            assert "FFFFFFFF" not in json.dumps(result)
 
 
 def test_reserved_root_nested_hidden_and_uppercase(fixture, project):

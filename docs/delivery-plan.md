@@ -179,3 +179,10 @@ This miss requires coordinator review, not an implicit scope expansion.
 Python 3.10.6 remains an experimental development environment. Basic editable/
 wheel packaging does not settle production runtime support. Actual MCP clients,
 tokenizer results, OneDrive behavior and two-device pilots remain blocked.
+
+Coordinator review subsequently required strict YAML 1.2 Core scalar resolution
+and normalization of out-of-range Unicode escape overflow to collected metadata
+errors. The corrective delivery records 296 passing contract/parser/fault tests,
+the same seven declared skips and the unchanged 31-pass/seven-symlink-block
+Windows harness. Separate refreshed parser-source measurement evidence keeps
+the 100-note p95 at 594 ms: still a miss, not a changed gate or tuning waiver.

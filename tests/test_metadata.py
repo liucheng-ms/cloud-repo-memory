@@ -1,11 +1,13 @@
 import itertools
 import json
+import math
 
 import pytest
 from jsonschema import Draft202012Validator
+from ruamel.yaml import YAML
 
 from cloud_repo_memory.metadata import (
-    FIELDS, Note, SourceError, escape, parse, render, version,
+    CoreResolver, FIELDS, SourceError, escape, parse, render, version,
 )
 from support import ACCEPTANCE, REPO, source
 
@@ -94,11 +96,78 @@ def test_invalid_source_format(raw):
 
 
 def test_yaml_12_no_date_or_boolean_string_coercion():
-    raw = source().replace(b'"Synthetic title"', b"yes")
-    assert parse(raw, "sample-telemetry").metadata["title"] == "yes"
-    for replacement in (b"true", b"2026-09-26", b"123"):
+    for text in ("yes", "2026-09-26"):
+        raw = source().replace(b'"Synthetic title"', text.encode())
+        assert parse(raw, "sample-telemetry").metadata["title"] == text
+    for replacement in (b"true", b"123"):
         with pytest.raises(SourceError):
             parse(source().replace(b'"Synthetic title"', replacement), "sample-telemetry")
+
+
+@pytest.mark.parametrize("text,expected", [
+    ("", None), ("~", None), ("null", None), ("Null", None), ("NULL", None),
+    ("true", True), ("True", True), ("TRUE", True),
+    ("false", False), ("False", False), ("FALSE", False),
+    ("0", 0), ("01", 1), ("+01", 1), ("-019", -19), ("0o17", 15), ("0x3A", 58),
+    ("0.", 0.0), ("-0.0", -0.0), (".5", 0.5), ("+.5", 0.5),
+    ("+12e03", 12000.0), ("-2E+05", -200000.0), ("1.e-1", 0.1),
+    (".inf", math.inf), ("-.Inf", -math.inf), ("+.INF", math.inf),
+    (".nan", math.nan), (".NaN", math.nan), (".NAN", math.nan),
+])
+def test_core_scalar_types(text, expected):
+    yaml = YAML(typ="safe", pure=True)
+    yaml.Resolver = CoreResolver
+    yaml.version = (1, 2)
+    actual = yaml.load("value: " + text)["value"]
+    assert type(actual) is type(expected)
+    if isinstance(expected, float) and math.isnan(expected):
+        assert math.isnan(actual)
+    else:
+        assert actual == expected
+    if text:
+        assert parse(source(title=text), "sample-telemetry").metadata["title"] == text
+    with pytest.raises(SourceError, match="INVALID_METADATA"):
+        parse(source(schema_version=text), "sample-telemetry")
+    for field, old in (("schema_version", b"1"), ("title", b'"Synthetic title"')):
+        raw = source().replace(field.encode() + b": " + old,
+                               field.encode() + b": " + text.encode(), 1)
+        if field == "schema_version" and type(expected) is int and expected == 1:
+            assert parse(raw, "sample-telemetry").metadata["schema_version"] == 1
+        else:
+            with pytest.raises(SourceError, match="INVALID_METADATA"):
+                parse(raw, "sample-telemetry")
+
+
+@pytest.mark.parametrize("text", [
+    "0b1", "0B1", "+0b1", "-0b1", "1_", "1_0", "0o1_", "0x1_",
+    "+0o1", "-0o1", "+0x1", "-0x1", "0O1", "0X1", "0o8", "0xG",
+    "1_0.5", "1.0_", "1e1_0", "+.nan", "-.NaN", ".nAn", ".iNF",
+    "1:00", "2026-09-26", "2026-09-26T12:00:00Z", "yes", "no", "on", "off", "nUlL",
+])
+def test_non_core_scalars_stay_strings_without_numeric_coercion(text):
+    raw = source().replace(b'"Synthetic title"', text.encode())
+    note = parse(raw, "sample-telemetry")
+    assert note.metadata["title"] == text
+    assert note.version == version(raw)
+    with pytest.raises(SourceError, match="INVALID_METADATA"):
+        parse(source().replace(b"schema_version: 1", b"schema_version: " + text.encode()),
+              "sample-telemetry")
+
+
+@pytest.mark.parametrize("text", ["1", "+1", "01", "0x1", "0x01", "0o1", "0o01"])
+def test_core_integer_one_forms_and_quoted_strings(text):
+    assert parse(source().replace(b"schema_version: 1", b"schema_version: " + text.encode()),
+                 "sample-telemetry").metadata["schema_version"] == 1
+    assert parse(source(title=text), "sample-telemetry").metadata["title"] == text
+    with pytest.raises(SourceError, match="INVALID_METADATA"):
+        parse(source(schema_version=text), "sample-telemetry")
+
+
+@pytest.mark.parametrize("escape_text", [br"\UFFFFFFFF", br"\U00110000", br"\U7FFFFFFF"])
+def test_out_of_range_unicode_escape_is_invalid_metadata(escape_text):
+    raw = source().replace(b'"Synthetic title"', b'"' + escape_text + b'"')
+    with pytest.raises(SourceError, match="INVALID_METADATA"):
+        parse(raw, "sample-telemetry")
 
 
 def test_escaped_surrogate_is_invalid_metadata():

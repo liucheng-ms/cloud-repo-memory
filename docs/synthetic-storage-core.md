@@ -14,7 +14,7 @@ python -m venv .venv
 .\.venv\Scripts\python -m pip install -e '.[test]'
 .\.venv\Scripts\python -B -m pytest -q
 .\.venv\Scripts\python -B validation\windows-filesystem\test_winfs.py
-.\.venv\Scripts\python -B tests\measure_storage.py --output validation\synthetic-storage-results.json
+.\.venv\Scripts\python -B tests\measure_storage.py --output validation\synthetic-storage-parser-fix-results.json
 ```
 
 Use only an explicitly owned synthetic root. Do not substitute a real OneDrive,
@@ -108,9 +108,10 @@ recursive junction traversal.
 
 ## Executed synthetic evidence
 
-Final callable/parser/fault suite: **223 passed, 7 skipped**, 30.04 seconds.
+Initial callable/parser/fault suite: **223 passed, 7 skipped**, 30.04 seconds.
 Those seven are **declared missing platform/pilot evidence**, not seven attempted
-filesystem operations that passed.
+filesystem operations that passed. The post-review parser run below supersedes
+this initial test count.
 
 Retained Windows harness: **38 tests, 31 passed, 7 skipped/BLOCKED**, zero
 failures/errors, 21.278 seconds. These seven are **actual symlink creation
@@ -140,11 +141,12 @@ coverage, **not agent selection, answer quality or real-client retrieval evidenc
 
 ## Measurements and remaining performance miss
 
-Raw evidence:
+Initial-delivery raw evidence:
 [before optimization](../validation/synthetic-storage-before.json) and
-[final results](../validation/synthetic-storage-results.json). Each contains the
+[after optimization](../validation/synthetic-storage-results.json). Each contains the
 first call plus all 30 subsequent observations per corpus. The final file records
-package versions and a hash of sorted runtime module bytes. All sources were
+package versions and a hash of that delivery's sorted runtime module bytes.
+The corrected parser has separate, refreshed evidence below. All sources were
 locally available synthetic files on this host's fixed NTFS drive.
 
 | Corpus | Source bytes | Index bytes | First call, before / after | Subsequent p95, before / after |
@@ -180,6 +182,48 @@ cache**. Callable elapsed and caller round-trip are recorded separately;
 100-note caller p95 was also 594 ms. Actual MCP-client round-trip, tokenizer
 identity/token counts and the 12,000-token gate remain **unknown**, not inferred
 from byte counts.
+
+### Parser correctness review
+
+Coordinator review found that the YAML library's version setting still enabled
+non-Core scalar resolution and that an out-of-range quoted Unicode escape could
+raise `OverflowError` outside the metadata-error boundary. Both are corrected.
+An explicit resolver now uses the complete ordered null/bool/int/float rules
+from [YAML 1.2.2 Core section 10.3.2](https://yaml.org/spec/1.2.2/#1032-tag-resolution),
+with all unmatched plain scalars remaining strings. This is not a blacklist of
+individual numeric spellings: binary/underscore spellings, signed hex/octal
+spellings and timestamps are strings; valid Core decimal/hex/octal numbers,
+floats, null and booleans retain their types. Quoted values remain strings.
+The existing metadata rules still require integer `1` for `schema_version`
+and strings for the other fields. No implicit timestamp conversion is allowed.
+
+Parser-specific Unicode overflow now produces `INVALID_METADATA`, not
+`INTERNAL_ERROR`. Regressions exercise `"\UFFFFFFFF"` beside a second malformed
+note, duplicate IDs and an optionally unreadable candidate. Both callable
+surfaces retain the other observed diagnostics, ordering, availability-first
+precedence and `scan_complete: false`, without partial content or raw exceptions.
+The YAML merge-key regression remains unchanged and passing.
+
+Post-review verification: targeted parser/collection selectors **80 passed**;
+full suite **296 passed, 7 declared evidence skips**, 31.97 seconds. The retained
+Windows harness separately reports **31 passed, 7 actual symlink blocks**,
+21.446 seconds, with the same 174-to-174 handle count over ten jobs.
+
+[Parser-correction measurements](../validation/synthetic-storage-parser-fix-results.json)
+preserve a new hash of the corrected runtime and all first-plus-30 samples,
+without overwriting either earlier evidence file. This was a provenance refresh,
+not another tuning pass:
+
+| Corpus | Index bytes | First call | Subsequent p95 |
+| --- | ---: | ---: | ---: |
+| 5 notes | 1,541 | 218 ms | 219 ms |
+| 100 notes / 1 MiB | 43,004 | 579 ms | 594 ms |
+| 200 notes / 2 MiB | 85,904 | 953 ms | 969 ms |
+
+The 100-note **594-ms p95 still misses the unchanged 500-ms target**; the
+first-call and byte targets still pass. The 201-note case still fails explicitly.
+No schema, ceiling, scan policy or MCP scope changed, and all platform/tokenizer/
+real-client/OneDrive limits above remain in effect.
 
 ## Still blocked / next review
 
