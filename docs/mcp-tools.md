@@ -10,10 +10,13 @@ implementation. Its intended tools are:
 | `list_memory_index` | Generate a Markdown directory from eligible notes' metadata within the configured project. |
 | `get_memory` | Read the full note identified by a stable memory ID within that project. |
 
-These are behavioral requirements, not frozen JSON Schemas. Project selection,
-ID validation, result envelopes, and explicit failure codes must be specified
-in a separate versioned local-MVP contract before implementing the tools.
-The MVP must not be presented as conforming to the existing M0 manifest.
+The [local MVP v1 contract](local-mvp-contract.md) and its
+[JSON Schema](../contracts/local-mvp-v1.schema.json) now specify project
+selection, ID validation, result envelopes, and explicit failure codes.
+This is a design baseline, not an implemented or runtime-validated interface.
+The [delivery plan](delivery-plan.md) requires a Windows filesystem feasibility
+gate before full implementation. The MVP must not be presented as conforming
+to the existing M0 manifest.
 
 Initial scope uses a configured project-to-local-directory mapping. Automatic
 remote-to-GUID resolution, search, mutation, approval, database storage, and

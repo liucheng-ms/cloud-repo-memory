@@ -1,0 +1,407 @@
+{
+  "contract_version": "local-mvp-v1",
+  "synthetic": true,
+  "evaluator_only": true,
+  "status": "specified-not-runtime-executed",
+  "schema": "../contracts/local-mvp-v1.schema.json",
+  "fixture_adaptation": {
+    "source_directory": "samples/kusto-memory/agent-input",
+    "destination": "isolated synthetic test workspace, not existing fixtures",
+    "project": "sample-telemetry",
+    "rules": [
+      "Copy only the five topic files; preserve their bodies and IDs.",
+      "Remove repository; add project: sample-telemetry and schema_version: 1.",
+      "Preserve status: active and approval: approved; add the metadata overlays below.",
+      "Do not import MEMORY.md, evaluation-cases.json, baseline-results.md or this acceptance artifact.",
+      "All mutations below are test-harness actions in isolated copies, never MCP mutations."
+    ],
+    "overlays": [
+      {
+        "id": "kst-001",
+        "file": "environment-routing.md",
+        "title": "Environment routing",
+        "summary": "Fictional production and staging query destinations and scope rules.",
+        "read_when": "Choosing the cluster alias and database for an investigation."
+      },
+      {
+        "id": "kst-002",
+        "file": "request-latency.md",
+        "title": "Request latency",
+        "summary": "Current latency table, duration units, filters and percentile grouping.",
+        "read_when": "Users report slow requests or need a scoped latency query."
+      },
+      {
+        "id": "kst-003",
+        "file": "request-traces.md",
+        "title": "Request trace correlation",
+        "summary": "Completion emitter mapping and diagnostic-message correlation.",
+        "read_when": "Finding logs for a request or connecting telemetry to its code emitter."
+      },
+      {
+        "id": "kst-004",
+        "file": "ingestion-delay.md",
+        "title": "Missing recent events",
+        "summary": "Usual ingestion visibility and limitations of arrived-row lag estimates.",
+        "read_when": "Recently emitted events are absent and ingestion delay may explain the gap."
+      },
+      {
+        "id": "kst-005",
+        "file": "retention.md",
+        "title": "Retention and historical data",
+        "summary": "Retention periods and limits of evidence for historical events.",
+        "read_when": "Investigating older events or deciding whether absence means nonoccurrence."
+      }
+    ]
+  },
+  "schema_examples": [
+    {
+      "id": "valid-config",
+      "definition": "configuration",
+      "valid": true,
+      "value": {
+        "schema_version": 1,
+        "projects": [{ "project": "sample-telemetry", "root": "C:\\SyntheticMemory\\sample-telemetry" }]
+      }
+    },
+    {
+      "id": "valid-frontmatter",
+      "definition": "frontmatter",
+      "valid": true,
+      "value": {
+        "schema_version": 1,
+        "id": "kst-001",
+        "project": "sample-telemetry",
+        "title": "Environment routing",
+        "summary": "Fictional production and staging destinations.",
+        "read_when": "Choosing a query destination.",
+        "status": "active",
+        "approval": "approved"
+      }
+    },
+    {
+      "id": "missing-frontmatter-fields",
+      "definition": "frontmatter",
+      "valid": false,
+      "value": { "id": "kst-001", "project": "sample-telemetry" }
+    },
+    {
+      "id": "valid-index-input",
+      "definition": "listMemoryIndexInput",
+      "valid": true,
+      "value": { "project": "sample-telemetry" }
+    },
+    {
+      "id": "invalid-index-extra-field",
+      "definition": "listMemoryIndexInput",
+      "valid": false,
+      "value": { "project": "sample-telemetry", "limit": 1 }
+    },
+    {
+      "id": "valid-get-input",
+      "definition": "getMemoryInput",
+      "valid": true,
+      "value": {
+        "project": "sample-telemetry",
+        "memory_id": "kst-001",
+        "expected_version": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "id": "invalid-id-traversal",
+      "definition": "getMemoryInput",
+      "valid": false,
+      "value": { "project": "sample-telemetry", "memory_id": "..\\other\\note.md" }
+    },
+    {
+      "id": "invalid-null-id",
+      "definition": "getMemoryInput",
+      "valid": false,
+      "value": { "project": "sample-telemetry", "memory_id": null }
+    },
+    {
+      "id": "invalid-version",
+      "definition": "getMemoryInput",
+      "valid": false,
+      "value": { "project": "sample-telemetry", "memory_id": "kst-001", "expected_version": "latest" }
+    },
+    {
+      "id": "index-success-envelope-shape-only",
+      "definition": "listMemoryIndexOutput",
+      "valid": true,
+      "value": {
+        "contract_version": "local-mvp-v1",
+        "ok": true,
+        "project": "sample-telemetry",
+        "observation": {
+          "started_at": "2026-09-26T00:00:00Z",
+          "finished_at": "2026-09-26T00:00:00.010Z",
+          "elapsed_ms": 10,
+          "consistency": "local-best-effort",
+          "cloud_freshness": "unknown"
+        },
+        "index_version": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "index_markdown": "# Example shape only\n",
+        "entry_count": 0,
+        "excluded_count": 0,
+        "index_utf8_bytes": 21
+      }
+    },
+    {
+      "id": "get-success-envelope-shape-only",
+      "definition": "getMemoryOutput",
+      "valid": true,
+      "value": {
+        "contract_version": "local-mvp-v1",
+        "ok": true,
+        "project": "sample-telemetry",
+        "memory_id": "kst-001",
+        "observation": {
+          "started_at": "2026-09-26T00:00:00Z",
+          "finished_at": "2026-09-26T00:00:00.010Z",
+          "elapsed_ms": 10,
+          "consistency": "local-best-effort",
+          "cloud_freshness": "unknown"
+        },
+        "source_version": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "source_utf8_bytes": 250,
+        "metadata": {
+          "schema_version": 1,
+          "id": "kst-001",
+          "project": "sample-telemetry",
+          "title": "Environment routing",
+          "summary": "Fictional destinations.",
+          "read_when": "Choosing a query destination.",
+          "status": "active",
+          "approval": "approved"
+        },
+        "body_markdown": "# Environment routing\n"
+      }
+    },
+    {
+      "id": "failure-envelope",
+      "definition": "getMemoryOutput",
+      "valid": true,
+      "value": {
+        "contract_version": "local-mvp-v1",
+        "ok": false,
+        "observation": {
+          "started_at": "2026-09-26T00:00:00Z",
+          "finished_at": "2026-09-26T00:00:00.010Z",
+          "elapsed_ms": 10,
+          "consistency": "local-best-effort",
+          "cloud_freshness": "unknown"
+        },
+        "error": {
+          "code": "MEMORY_NOT_FOUND",
+          "message": "No memory with this ID exists in the configured project.",
+          "diagnostics": [],
+          "diagnostics_omitted": 0,
+          "scan_complete": true
+        }
+      }
+    },
+    {
+      "id": "invalid-partial-success",
+      "definition": "listMemoryIndexOutput",
+      "valid": false,
+      "value": { "contract_version": "local-mvp-v1", "ok": true, "index_markdown": "" }
+    }
+  ],
+  "contract_cases": [
+    {
+      "id": "index-then-body",
+      "setup": "Adapt the five Kusto topic fixtures.",
+      "actions": ["List sample-telemetry.", "Get kst-001 with the listed source version."],
+      "expect": [
+        "Five entries sorted kst-001 through kst-005; excluded_count is zero.",
+        "Directory uses only frontmatter, with no query/body excerpts or filesystem paths.",
+        "Recompute source and index hashes, UTF-8 byte counts and exact renderer output.",
+        "Get returns original body and eligible metadata from the same validated source buffer."
+      ]
+    },
+    {
+      "id": "stable-rename-and-repeat",
+      "setup": "Valid fixture project; save the first index.",
+      "actions": ["Rename kst-001's file without changing bytes.", "Vary filesystem enumeration order and relist.", "Get kst-001."],
+      "expect": ["Index bytes/version and source version are unchanged; observation timestamps may change.", "ID still resolves."]
+    },
+    {
+      "id": "source-bytes-and-metadata-refresh",
+      "setup": "Separate valid copies use LF, CRLF and UTF-8 BOM; include non-ASCII text and an empty body. Then edit title/summary/read_when without changing ID.",
+      "actions": ["List and get each copy.", "Edit metadata between calls and relist.", "Recompute SHA-256 from exact file bytes."],
+      "expect": ["Bodies preserve original line endings and empty content; parsed metadata is unchanged by BOM or delimiter line endings.", "Byte-different files have their own exact-byte source versions; no newline normalization before hashing.", "The next index reflects edited metadata without restart or stale cache; body reads retain the stable ID."]
+    },
+    {
+      "id": "eligibility-matrix",
+      "setup": "For each status draft/active/archived/superseded crossed with approval pending/approved/rejected, create a separate valid project copy.",
+      "actions": ["List and get the note for all 12 combinations."],
+      "expect": ["Only active plus approved is indexed/readable.", "Other combinations increment excluded_count and get returns MEMORY_INELIGIBLE, no body."]
+    },
+    {
+      "id": "invalid-frontmatter",
+      "setup": "Separate cases: missing each required field, extra field, wrong type, unsupported schema_version, unknown lifecycle, wrong project, empty/whitespace text, controls/newline, overlong fields, duplicate YAML key, anchors, aliases, merge keys, custom tags, missing delimiters or invalid UTF-8.",
+      "actions": ["List.", "Get an otherwise valid unrelated note."],
+      "expect_error": "INVALID_METADATA",
+      "expect": ["Both calls fail with diagnostics and no partial content.", "Malformed lifecycle is never silently excluded."]
+    },
+    {
+      "id": "unknown-project",
+      "setup": "Only sample-telemetry is configured.",
+      "actions": ["List valid slug other-project.", "Get kst-001 from other-project."],
+      "expect_error": "UNKNOWN_PROJECT",
+      "expect": ["No fallback or filesystem probing for another project."]
+    },
+    {
+      "id": "project-scoping",
+      "setup": "Configure disjoint alpha/beta roots, each with ID shared-001 but different project metadata and bodies; beta also has beta-only.",
+      "actions": ["Read shared-001 from each project.", "Get beta-only from alpha."],
+      "expect": ["Each shared ID resolves only its own project.", "Cross-project lookup returns MEMORY_NOT_FOUND."]
+    },
+    {
+      "id": "unknown-id",
+      "setup": "Valid five-note project.",
+      "actions": ["Get absent-001."],
+      "expect_error": "MEMORY_NOT_FOUND",
+      "expect": ["Complete scan; no guessed match or filename fallback."]
+    },
+    {
+      "id": "duplicate-id-conflict",
+      "setup": "Separate cases: identical copy, different-body OneDrive conflict copy, active and archived copies sharing an ID.",
+      "actions": ["List.", "Get the duplicate ID.", "Get an unrelated ID."],
+      "expect_error": "DUPLICATE_ID",
+      "expect": ["All calls fail, no winner selected, no body/index returned."]
+    },
+    {
+      "id": "unavailable-source",
+      "setup": "Separate cases: access-denied candidate, cloud-only placeholder unavailable locally, read deadline exceeded.",
+      "actions": ["List.", "Get another valid ID."],
+      "expect_error": "FILE_UNAVAILABLE",
+      "expect": ["No empty or partial success, no stale-cache fallback, no explicit hydration request.", "scan_complete is false."]
+    },
+    {
+      "id": "unavailable-root",
+      "setup": "A mapped root is removed, inaccessible or becomes a regular file before the call.",
+      "actions": ["List.", "Get kst-001."],
+      "expect_error": "PROJECT_UNAVAILABLE",
+      "expect": ["Other configured projects remain usable."]
+    },
+    {
+      "id": "update-between-calls",
+      "setup": "List and retain kst-001's version, then edit only its body before get.",
+      "actions": ["Get with old expected_version.", "Get without expected_version.", "Relist."],
+      "expect": ["Conditional read returns MEMORY_CHANGED with no body.", "Unconditional read returns new body/version.", "New directory version changes despite unchanged metadata."]
+    },
+    {
+      "id": "delete-or-demote-between-calls",
+      "setup": "Separate copies: list then delete kst-001; list then set it to archived.",
+      "actions": ["Get with previously listed expected_version."],
+      "expect": ["Deletion returns MEMORY_NOT_FOUND.", "Archiving returns MEMORY_INELIGIBLE, not MEMORY_CHANGED; no stale body."]
+    },
+    {
+      "id": "concurrent-local-change",
+      "setup": "Inject edit, add, delete, rename or identity replacement after enumeration/during reading/before final inventory check in separate runs.",
+      "actions": ["List.", "Get."],
+      "expect_error": "LOCAL_CHANGE_DETECTED",
+      "expect": ["For detected changes, no mixed/partial response or server retry.", "Record hook and observed identity/stat/inventory mismatch; do not claim all races detectable."]
+    },
+    {
+      "id": "path-input-attacks",
+      "setup": "Use each of ../x, ..\\x, C:\\x, /x, %2e%2e, uppercase IDs, a slash, a dot and a null byte in project or memory_id; also add path/remote_url input fields.",
+      "actions": ["Call both tools where the argument applies."],
+      "expect_error": "INVALID_ARGUMENT",
+      "expect": ["Reject before filesystem access; never decode ID as path."]
+    },
+    {
+      "id": "filesystem-escapes",
+      "setup": "Separate isolated fixtures: file symlink, directory symlink, junction to another project/outside, in-root redirect, root/ancestor redirect, hard-linked Markdown source, unknown reparse tag, and redirect swapped in during open.",
+      "actions": ["List and get with instrumented containment checks."],
+      "expect_error": "SCOPE_VIOLATION",
+      "expect": ["Never read or return target content; do not traverse redirects.", "Unsupported platform/link creation capabilities are unverified, not passed."]
+    },
+    {
+      "id": "onedrive-nonredirect-placeholder",
+      "setup": "Locally available synthetic note with a supported nonredirecting cloud-placeholder tag.",
+      "actions": ["List and get; verify final opened handle remains in the root."],
+      "expect": ["Ordinary locally available OneDrive files succeed; cloud freshness remains unknown.", "Needs supported-device runtime evidence, not a mock-only claim."]
+    },
+    {
+      "id": "configuration-rejection",
+      "setup": "Separate configs: duplicate keys, relative or UNC/device root, equal roots, case-equivalent Windows roots, nested roots.",
+      "actions": ["Attempt server startup."],
+      "expect": ["Startup rejects invalid configuration on stderr without partly publishing mappings or corrupting stdio."]
+    },
+    {
+      "id": "enumeration-and-empty",
+      "setup": "Separate projects: no files; valid but all-ineligible notes; hidden valid note and uppercase .MD; root MEMORY.md with invalid metadata; nested MEMORY.md with invalid metadata.",
+      "actions": ["List each project."],
+      "expect": ["First two yield explicit empty index and correct excluded counts.", "Hidden/uppercase-extension notes are included.", "Root MEMORY.md alone is ignored; nested malformed MEMORY.md fails INVALID_METADATA."]
+    },
+    {
+      "id": "resource-bounds",
+      "setup": "For every limit in docs/local-mvp-contract.md, construct a just-at and just-over case, keeping other dimensions within limits; test UTF-8 multibyte content.",
+      "actions": ["List and get as applicable; instrument reads, allocations and enumeration."],
+      "expect_error_for_over_limit": "LIMIT_EXCEEDED",
+      "expect": ["At-limit inputs remain permitted.", "No truncated success and no unbounded allocation; file read deadline specifically yields FILE_UNAVAILABLE.", "Diagnostics cap is tested separately, not treated as a scan-size error."]
+    },
+    {
+      "id": "diagnostic-cap",
+      "setup": "Create 25 independent malformed notes with one observed diagnostic each; separately abort a scan before completion.",
+      "actions": ["List."],
+      "expect": ["Malformed-note case reports INVALID_METADATA, 20 ordered diagnostics and diagnostics_omitted 5.", "scan_complete is false; omitted counts observed diagnostics only; no source paths or invalid values echoed."]
+    },
+    {
+      "id": "rendering-untrusted-metadata",
+      "setup": "Valid title/summary/read_when containing brackets, Markdown punctuation, HTML tags and ampersands.",
+      "actions": ["List and compare exact escaping."],
+      "expect": ["Metadata renders literally with no injected links/HTML and bounded byte count.", "Source content is data, not instructions."]
+    },
+    {
+      "id": "transport-and-freshness",
+      "setup": "Actual stdio MCP client plus a valid project; then inject schema-invalid tool arguments and an internal failure.",
+      "actions": ["Discover tools.", "Call each success/error path.", "Observe stdout/stderr and structuredContent/content."],
+      "expect": ["Only two read-only tools; output matches schema and isError equals !ok.", "Structured output equals parsed single text JSON block; no stdout logging.", "Every call reports local-best-effort, unknown cloud freshness and monotonic elapsed_ms.", "Internal errors are sanitized and never return stale or partial content."]
+    }
+  ],
+  "retrieval_evaluation": {
+    "cases_source": "samples/kusto-memory/evaluation-cases.json",
+    "case_ids": ["latency-paraphrase", "code-to-log-correlation", "missing-recent-event", "historical-data", "missing-scope", "unknown-topic"],
+    "clients_required": 2,
+    "fresh_session_per_case": true,
+    "agent_instruction": "For sample-telemetry obtain list_memory_index before answering project-knowledge questions. Read relevant bodies by get_memory, preferably passing the listed source version. Summaries are navigation, not evidence. Cite memory IDs. Do not read evaluator files, connect to clusters or execute queries. If the memory lacks an answer, say so and request an appropriate source.",
+    "trace_required": [
+      "Client/version, model/version, settings, device and run ID.",
+      "Index tool input/output, index_version, source versions and call order.",
+      "Every get_memory input, successful returned ID/project/version, errors and retries.",
+      "Final answer with cited IDs, required-fact and forbidden-claim scoring.",
+      "Index UTF-8 bytes and actual tokenizer/token count when available.",
+      "Server elapsed_ms and client monotonic round-trip duration per call."
+    ],
+    "pass_rules": [
+      "All required IDs in the referenced case are successfully read after index discovery; citations alone do not count.",
+      "All required facts appear and no forbidden claims appear.",
+      "Missing retrieval trace means unverified rather than pass.",
+      "Unknown-topic still requires index discovery but no body reads are required; explicitly state Redis policy/dashboard are undocumented and ask for a source.",
+      "Record unrelated body reads and bytes as efficiency observations, not automatic correctness failures.",
+      "Treat transport's JSON text and structuredContent as alternative representations, not duplicate context."
+    ],
+    "provisional_target": "6/6 cases pass per client, 100% required-ID coverage, zero fabricated project facts; not achieved or measured."
+  },
+  "measurement_plan": {
+    "status": "provisional-budgets-not-achieved",
+    "corpora": [
+      { "notes": 5, "description": "Adapted Kusto pilot", "index_utf8_bytes_target_max": 2048 },
+      { "notes": 100, "description": "Synthetic 1 MiB total; each title 60 ASCII characters, summary/read_when 120 each", "index_utf8_bytes_target_max": 49152, "index_tokens_target_max": 12000 },
+      { "notes": 200, "description": "Synthetic scale ceiling within total source byte limit; record results, no latency target yet" },
+      { "notes": 201, "description": "Over-ceiling corpus must fail explicitly, not return a prefix" }
+    ],
+    "latency": {
+      "applies_to": "Fully local 100-note/1 MiB corpus on recorded device, not OneDrive sync latency",
+      "first_process_scan_target_max_ms": 1000,
+      "subsequent_scan_count": 30,
+      "subsequent_scan_p95_target_max_ms": 500,
+      "percentile_method": "Nearest rank: sort 30 elapsed values ascending and select rank ceil(0.95 * 30) = 29.",
+      "record": ["OS/filesystem/device", "All files locally available", "Server build", "Corpus bytes and hashes", "Each server elapsed_ms", "Each client round-trip duration", "Index bytes and tokenizer/version/tokens", "Failures and missing measurements"],
+      "caveats": ["First process scan is not proof of a cold OS disk cache.", "No server metadata cache is assumed.", "Unknown tokenizer or missing traces cannot pass the corresponding gate.", "No runtime, retrieval, synchronization or performance result is claimed by this specification."]
+    }
+  }
+}
