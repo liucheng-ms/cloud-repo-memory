@@ -253,3 +253,27 @@ Corrected verification: **317 passed, seven declared evidence skips**; Windows
 **31 passed, seven actual symlink blocks**. Both external installed-wheel
 variants pass again. This is corrective evidence pending coordinator review,
 not acceptance of real-client or OneDrive deployment.
+
+### Coordinator acceptance: synthetic local MCP
+
+The coordinator integrated the correction, reviewed the exception boundaries
+and nonfatal SDK transport mode, and reran all 44 protocol/supervisor cases
+successfully. The initial full suites and both installed-wheel build paths had
+also been independently reproduced in the coordinator worktree; the correction
+includes the child session's refreshed full-suite and packaging evidence above.
+
+Accept the local synthetic-data storage and stdio prototype for the next
+client-evaluation stage, not production or OneDrive conformance. All reviewed
+correctness findings have targeted fixes and regression coverage. The unchanged
+594-ms latency miss and missing real-device/platform evidence remain open.
+
+Next obtain the user's choice of two coding clients, then prepare isolated
+synthetic configuration and a six-case retrieval protocol with actual tool
+traces, model/client versions and answer scoring. Do not alter user/global
+client settings without approval. Keep evaluator answers out of the clients'
+accessible corpus. Tokenizer availability and client force-kill behavior must
+be recorded, not inferred from SDK protocol tests.
+
+Only after that stage should an approved dedicated synthetic OneDrive folder
+be selected for provider and second-device observations. Never discover or
+ingest existing company knowledge to bypass a missing test environment.
