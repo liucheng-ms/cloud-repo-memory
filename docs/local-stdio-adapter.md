@@ -77,6 +77,18 @@ Direct registration of the typed `CallToolRequest` handler avoids the SDK
 decorator's automatic validation/error-to-text normalization and raw exception
 messages. [SDK implementation at the tested tag](https://github.com/modelcontextprotocol/python-sdk/blob/v1.30.0/src/mcp/server/lowlevel/server.py).
 
+Malformed transport frames use the SDK's nonfatal handling
+(`raise_exceptions=False`): a generic protocol logging notification is emitted,
+not a fabricated local memory envelope, and later valid requests remain usable.
+All registered request handlers, including discovery and SDK ping, have an
+explicit exception boundary before the SDK can stringify an unexpected error.
+Known-tool failures produce the normal `INTERNAL_ERROR` envelope; unexpected
+discovery/ping failures produce a generic `-32603` protocol error. Each emits a
+generic stderr notice. Unexpected `McpError` payloads are sanitized too;
+intentional unknown-tool errors remain `-32602`. These guards catch `Exception`,
+not cancellation or other `BaseException` subclasses, and checkpoint cancellation
+before publishing an error from previously running thread work.
+
 Exactly `list_memory_index` and `get_memory` are advertised, with read-only,
 non-destructive, idempotent and closed-world annotations. Each input/output
 schema preserves its named normative definition and adds the same document's
@@ -149,8 +161,8 @@ Adapter delivery results on this host:
 
 | Check | Observed result |
 | --- | --- |
-| Full storage/parser/fault/protocol suite | 312 passed, 7 declared missing-evidence skips; 64.18 s |
-| Retained Windows harness | 31 passed, 7 actual WinError 1314 symlink blocks; 22.581 s |
+| Full storage/parser/fault/protocol suite after protocol correction | 317 passed, 7 declared missing-evidence skips; 78.83 s |
+| Retained Windows harness after protocol correction | 31 passed, 7 actual WinError 1314 symlink blocks; 22.266 s |
 | Ten repeated Windows jobs | 174 handles before/after; one thread |
 | Direct wheel, isolated off-checkout install | Resource-byte parity; module and console stdio launchers pass |
 | Wheel rebuilt from sdist, isolated off-checkout install | Same parity, allowlisted inventory and both launchers pass |
@@ -165,6 +177,15 @@ start, active work stays owned, pings remain responsive, cancelled jobs do not
 publish success, cleanup-pending prevents replacement and confirmed release
 permits later recovery. Startup failures have stderr-only diagnostics; captured
 stdout is parsed by the SDK with no non-protocol frames.
+
+Coordinator review of the initial 312-pass delivery found that
+`raise_exceptions=True` terminated the session on malformed transport input.
+The correction adds five real-subprocess regressions: invalid boolean/object
+methods and invalid JSON followed by ping and successful retrieval; unexpected
+tool `RuntimeError`/`McpError`, discovery and ping errors followed by recovery.
+Captured stdout results/notifications and stderr contain no injected private
+sentinel. Existing cancellation/EOF and retained-worker cases still pass.
+Both isolated wheel variants were rebuilt and rechecked after the correction.
 
 `check_wheel.py` runs `build --wheel` directly, then default `build` (sdist then
 wheel), verifies artifact inventories, and installs each into a fresh venv

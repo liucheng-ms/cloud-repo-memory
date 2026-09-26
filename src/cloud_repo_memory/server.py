@@ -1,11 +1,13 @@
 """Read-only MCP stdio adapter for explicitly configured synthetic storage."""
 
 import argparse
+from collections.abc import Awaitable, Callable
 from functools import partial
 import json
 import logging
 import sys
 import time
+from typing import Any
 
 import anyio
 from jsonschema import Draft202012Validator
@@ -25,6 +27,14 @@ class SafeDiagnostic(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         print("MCP protocol diagnostic; check the request and local configuration.",
               file=sys.stderr)
+
+
+def tool_result(result: dict[str, Any]) -> types.ServerResult:
+    return types.ServerResult(types.CallToolResult(
+        structuredContent=result,
+        content=[types.TextContent(type="text", text=json.dumps(result, ensure_ascii=True))],
+        isError=not result["ok"],
+    ))
 
 
 def create_server(store: MemoryStore) -> Server:
@@ -59,8 +69,6 @@ def create_server(store: MemoryStore) -> Server:
     async def call_tool(request: types.CallToolRequest) -> types.ServerResult:
         started_at, started = utc_now(), time.monotonic()
         name, arguments = request.params.name, request.params.arguments
-        if name not in inputs:
-            raise McpError(types.ErrorData(code=types.INVALID_PARAMS, message="Unknown tool."))
         if not isinstance(arguments, dict) or not inputs[name].is_valid(arguments):
             result = envelope(failure("INVALID_ARGUMENT"), started_at, started)
         else:
@@ -75,15 +83,36 @@ def create_server(store: MemoryStore) -> Server:
             if not outputs[name].is_valid(result):
                 print("Local storage returned an invalid result.", file=sys.stderr)
                 result = envelope(failure("INTERNAL_ERROR"), started_at, started)
-        return types.ServerResult(types.CallToolResult(
-            structuredContent=result,
-            content=[types.TextContent(type="text", text=json.dumps(result, ensure_ascii=True))],
-            isError=not result["ok"],
-        ))
+        return tool_result(result)
+
+    def guard_handler(
+        handler: Callable[..., Awaitable[types.ServerResult]],
+    ) -> Callable[[types.ClientRequestType], Awaitable[types.ServerResult]]:
+        async def guarded(request: types.ClientRequestType) -> types.ServerResult:
+            started_at, started = utc_now(), time.monotonic()
+            is_tool = isinstance(request, types.CallToolRequest)
+            if isinstance(request, types.CallToolRequest) and request.params.name not in inputs:
+                raise McpError(types.ErrorData(code=types.INVALID_PARAMS, message="Unknown tool."))
+            try:
+                return await handler(request)
+            except Exception:
+                # Do not let the SDK stringify even an unexpected McpError. Cancellation
+                # still wins if owned thread work raised after the request was cancelled.
+                await anyio.lowlevel.checkpoint()
+                print("Local memory request handler failed.", file=sys.stderr)
+                if is_tool:
+                    return tool_result(envelope(failure("INTERNAL_ERROR"), started_at, started))
+                raise McpError(types.ErrorData(
+                    code=types.INTERNAL_ERROR, message="Local memory request failed.")) from None
+
+        return guarded
 
     # The decorator normalizes errors to text and can echo raw exceptions.
     # Route the SDK's typed request directly to preserve the frozen envelopes.
     server.request_handlers[types.CallToolRequest] = call_tool
+    # Include SDK ping and the discovery wrapper, not just our tool implementation.
+    server.request_handlers = {kind: guard_handler(handler)
+                               for kind, handler in server.request_handlers.items()}
     return server
 
 
@@ -105,7 +134,7 @@ async def serve(config_path: str) -> None:
         server = create_server(store)
         async with stdio_server() as (read_stream, write_stream):
             await server.run(read_stream, write_stream, server.create_initialization_options(),
-                             raise_exceptions=True)
+                             raise_exceptions=False)
     finally:
         # The SDK first cancels/joins handlers and closes transport. Retain ownership
         # even when the bounded cleanup observation could not confirm worker exit.

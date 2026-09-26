@@ -8,6 +8,7 @@ import time
 
 from cloud_repo_memory import server, storage
 from mcp import types
+from mcp.shared.exceptions import McpError
 
 config_path, ledger_path, mode = sys.argv[1:]
 ledger = Path(ledger_path)
@@ -68,6 +69,21 @@ def run(command):
 
 
 def create(store):
+    if mode in ("tool-exception", "tool-mcp-exception"):
+        method = store.get_memory
+        failed = False
+
+        def failing_get(*args, **kwargs):
+            nonlocal failed
+            if not failed:
+                failed = True
+                if mode == "tool-mcp-exception":
+                    raise McpError(types.ErrorData(code=-32603, message="PRIVATE_SENTINEL",
+                                                  data={"path": "PRIVATE_SENTINEL"}))
+                raise RuntimeError("PRIVATE_SENTINEL")
+            return method(*args, **kwargs)
+
+        store.get_memory = failing_get
     app = original_create(store)
     handle = app.request_handlers[types.CallToolRequest]
 
@@ -79,6 +95,41 @@ def create(store):
     return app
 
 
+class FaultServer(server.Server):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if mode == "ping-exception":
+            original = self.request_handlers[types.PingRequest]
+            failed = False
+
+            async def ping(request):
+                nonlocal failed
+                if not failed:
+                    failed = True
+                    raise RuntimeError("PRIVATE_SENTINEL")
+                return await original(request)
+
+            self.request_handlers[types.PingRequest] = ping
+
+    def list_tools(self):
+        register = super().list_tools()
+
+        def decorate(handler):
+            failed = False
+
+            async def listing():
+                nonlocal failed
+                if mode == "discovery-exception" and not failed:
+                    failed = True
+                    raise RuntimeError("PRIVATE_SENTINEL")
+                return await handler()
+
+            return register(listing)
+
+        return decorate
+
+
+server.Server = FaultServer
 subprocess.Popen = launch
 supervisor._run, supervisor.reap = run, reap
 server.create_server = create

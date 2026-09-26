@@ -241,3 +241,15 @@ No performance redesign or new latency claim: the previously measured 100-note
 p95 remains 594 ms against the unchanged provisional 500-ms target.
 No two coding-agent integrations, tokenizer/answer scoring, real OneDrive,
 real-provider cleanup or second-device pilot evidence is implied.
+
+Coordinator protocol review found that the initial adapter terminated on a
+malformed transport frame. The separate correction uses nonfatal SDK transport
+handling and sanitizes unexpected exceptions at every registered handler,
+including discovery and ping. Malformed frames receive SDK protocol diagnostics,
+not local-memory envelopes; subsequent ping/tool requests continue. Known-tool
+unexpected failures retain the generic contract error envelope. Deliberate
+unknown-tool errors and cancellation/EOF ownership behavior are preserved.
+Corrected verification: **317 passed, seven declared evidence skips**; Windows
+**31 passed, seven actual symlink blocks**. Both external installed-wheel
+variants pass again. This is corrective evidence pending coordinator review,
+not acceptance of real-client or OneDrive deployment.

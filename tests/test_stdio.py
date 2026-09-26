@@ -200,6 +200,65 @@ async def test_real_stdio_errors_and_invalid_arguments(fixture):
     assert "PRIVATE_SENTINEL" not in stderr
 
 
+@pytest.mark.anyio
+async def test_malformed_transport_frames_do_not_end_session(fixture):
+    root, note, settings = setup(fixture)
+    async with connect(fixture, settings) as (session, process, messages):
+        for frame in (
+            b'{"jsonrpc":"2.0","id":200,"method":false}\n',
+            b'{"jsonrpc":"2.0","id":201,"method":{"PRIVATE_SENTINEL":true}}\n',
+            b'not JSON PRIVATE_SENTINEL\n',
+        ):
+            before = len(messages)
+            await process.stdin.send(frame)
+            with anyio.fail_after(5):
+                while not any(isinstance(item.message.root, types.JSONRPCNotification)
+                              for item in messages[before:]):
+                    await anyio.sleep(0.01)
+                await session.send_ping()
+                check(await session.call_tool("get_memory", {
+                    "project": "p", "memory_id": "note-001"}))
+            assert process.returncode is None
+        encoded = "\n".join(item.message.model_dump_json() for item in messages)
+        assert "PRIVATE_SENTINEL" not in encoded
+    assert process.returncode == 0
+    stderr = fixture.base.joinpath("server-stderr.txt").read_text("utf-8")
+    assert "PRIVATE_SENTINEL" not in stderr
+    assert stderr.count("MCP protocol diagnostic;") == 3
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("mode", [
+    "tool-exception", "tool-mcp-exception", "discovery-exception", "ping-exception",
+])
+async def test_unexpected_handler_exceptions_are_generic_and_recoverable(fixture, mode):
+    root, note, settings = setup(fixture)
+    ledger = fixture.file("ownership.jsonl", b"")
+    async with connect(fixture, settings, harness=mode, ledger=ledger) as (session, process, messages):
+        if mode.startswith("tool-"):
+            result = check(await session.call_tool("get_memory", {
+                "project": "p", "memory_id": "note-001"}), code="INTERNAL_ERROR")
+            assert not result["error"]["scan_complete"]
+        else:
+            with pytest.raises(McpError) as failure:
+                if mode == "discovery-exception":
+                    await session.list_tools()
+                else:
+                    await session.send_ping()
+            assert failure.value.error.code == types.INTERNAL_ERROR
+            assert failure.value.error.message == "Local memory request failed."
+            assert failure.value.error.data is None
+        await session.send_ping()
+        assert len((await session.list_tools()).tools) == 2
+        check(await session.call_tool("get_memory", {"project": "p", "memory_id": "note-001"}))
+        assert process.returncode is None
+        encoded = "\n".join(item.message.model_dump_json() for item in messages)
+        assert "PRIVATE_SENTINEL" not in encoded
+    assert process.returncode == 0
+    stderr = fixture.base.joinpath("server-stderr.txt").read_text("utf-8")
+    assert stderr == "Local memory request handler failed.\n"
+
+
 @pytest.mark.parametrize("arguments", [[], ["--bad=PRIVATE_SENTINEL"],
                                        ["--config", "PRIVATE_SENTINEL.json"]])
 def test_launcher_failure_is_stderr_only(arguments, fixture):
