@@ -113,3 +113,29 @@ filesystem cases from actual OneDrive observations, and report any need for a
 user-operated test without requesting credentials. After this gate, assign
 storage/MCP implementation and client/evaluation integration against the same
 contract. No real-data rollout is authorized by design completion.
+
+### Stage 2A integration review
+
+The isolated Windows prototype session was provisioned successfully after
+network recovery. Its initial deliverable is integrated in this branch; the
+coordinator reproduced 36 tests: 29 passed, seven symlink cases were blocked
+by privilege error 1314, and none failed. See the
+[feasibility findings](windows-filesystem-feasibility.md) for the exact scope.
+No real OneDrive files were accessed.
+
+Targeted code review found a worker-ownership gap if reader setup fails after
+process launch. A corrective change and regression coverage are required before
+the conditional synthetic-only implementation gate is approved. Passing the
+original suite does not waive this finding.
+
+The coordinator accepted a contract clarification: 2-second file and 5-second
+scan limits are work budgets, not guarantees of kernel-I/O completion. Expired
+work cannot publish content. Unconfirmed cleanup after a bounded observation
+period latches the supervisor unhealthy without launching replacement workers.
+This shared operational fault can block multiple projects; malformed-note
+failures remain scoped to the affected project.
+
+Python with standard-library Win32 bindings is the provisional choice for the
+synthetic storage step, not a final production runtime/support commitment.
+Real OneDrive placeholder/hydration behavior, provider cleanup and the seven
+symlink cases remain release gates even after the local corrective work.

@@ -18,6 +18,7 @@ file synchronization; it is not a live shared database.
 - [Delivery plan and acceptance gates](docs/delivery-plan.md)
 - [Local MVP v1 contract and retrieval targets](docs/local-mvp-contract.md)
 - [OneDrive deployment boundary and pilot runbook](docs/onedrive-deployment.md)
+- [Windows filesystem prototype and evidence limits](docs/windows-filesystem-feasibility.md)
 - [OneDrive-backed local MVP decision](docs/adr/0002-onedrive-local-memory.md)
 - [MCP contract scope and original M0 reference](docs/mcp-tools.md)
 - [Synthetic Kusto memory pilot](validation/samples/kusto-memory/README.md)

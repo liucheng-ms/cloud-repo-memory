@@ -356,6 +356,24 @@
       "expect": ["Metadata renders literally with no injected links/HTML and bounded byte count.", "Source content is data, not instructions."]
     },
     {
+      "id": "worker-expiry-and-late-results",
+      "setup": "Use instrumented isolated filesystem workers with synthetic file/scan stalls and a late successful result; do not treat these as real provider I/O.",
+      "actions": ["Expire the 2000 ms file work budget.", "Expire the 5000 ms scan work budget.", "Deliver a queued success after the applicable budget expires."],
+      "expect": ["Never publish partial or late content; confirmed cleanup preserves FILE_UNAVAILABLE for file expiry or LIMIT_EXCEEDED for scan expiry.", "Record work start, expiry observation, response, termination request and confirmed exit/resource release separately.", "No hard real-time or kernel-I/O completion guarantee is inferred from synthetic results."]
+    },
+    {
+      "id": "worker-unconfirmed-cleanup",
+      "setup": "Inject unconfirmed worker or reader cleanup after the shared 500 ms observation budget; keep ownership of that exact process and resources.",
+      "actions": ["Call a tool.", "Submit 100 further filesystem jobs while cleanup remains unconfirmed.", "Confirm the original worker exits and resources are released, then retry."],
+      "expect": ["Return INTERNAL_ERROR with scan_complete false and a sanitized cleanup-pending diagnostic, never a successful body/index.", "The supervisor remains unhealthy and launches no replacement worker for the 100 submissions.", "Only confirmed cleanup permits recovery; no PIDs, paths or prototype-only fields enter the MCP envelope."]
+    },
+    {
+      "id": "worker-setup-failure",
+      "setup": "Inject reader construction and reader-start failures after successful worker launch, separately; exercise confirmed and unconfirmed cleanup.",
+      "actions": ["Call a tool repeatedly under each injected failure."],
+      "expect": ["Ownership is registered immediately after launch, before fallible reader/IPC setup.", "Return an explicit sanitized failure and either confirm cleanup or retain the unhealthy latch.", "Absent/unstarted readers do not bypass process cleanup or cause join-before-start failures; repeated submissions cannot accumulate unowned workers."]
+    },
+    {
       "id": "transport-and-freshness",
       "setup": "Actual stdio MCP client plus a valid project; then inject schema-invalid tool arguments and an internal failure.",
       "actions": ["Discover tools.", "Call each success/error path.", "Observe stdout/stderr and structuredContent/content."],

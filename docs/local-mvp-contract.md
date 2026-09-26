@@ -150,14 +150,45 @@ Normative v1 ceilings (not performance achievements):
 | Frontmatter bytes including delimiter lines/BOM | 8,192 | `LIMIT_EXCEEDED` |
 | Aggregate source bytes read | 16,777,216 | `LIMIT_EXCEEDED` |
 | Rendered index UTF-8 bytes | 131,072 | `LIMIT_EXCEEDED` |
-| One file open/read deadline | 2,000 ms | `FILE_UNAVAILABLE` |
-| Entire scan deadline | 5,000 ms | `LIMIT_EXCEEDED` |
+| One file open/read work budget | 2,000 ms | `FILE_UNAVAILABLE` |
+| Entire scan work budget | 5,000 ms | `LIMIT_EXCEEDED` |
 | Returned diagnostics | 20 | See explicit truncation below |
 
 Bounds apply while reading/enumerating, not just after allocation. Equality is
 allowed. Never skip an oversized, unreadable, or out-of-scope candidate, truncate
 the directory, silently return a prefix, or turn an incomplete scan into empty
 success. No pagination, caller limits, or server retries in v1.
+
+### Work expiry and worker ownership
+
+The time limits above are monotonic work budgets, not hard real-time response
+or kernel-I/O-completion guarantees. Start the scan budget before launching
+the filesystem worker; include open/read/validation in each file budget.
+Delayed IPC must not restart a budget. On observed expiry, discard partial or
+late successful results and request cancellation/termination of that exact
+worker. OS scheduling, process launch, and message delivery can delay observation
+and the caller's response.
+
+Observe worker exit and owned-resource cleanup for at most a further 500 ms,
+subject to OS scheduling. Confirmed cleanup preserves the timeout error above.
+If cleanup is unconfirmed, retain ownership of the exact process and its
+resources, mark the supervisor unhealthy, and return `INTERNAL_ERROR` with
+`scan_complete: false` and a generic cleanup-pending diagnostic. Do not expose
+PIDs, paths, raw exceptions, or prototype measurement fields in tool output.
+Do not publish a successful response while cleanup remains unconfirmed.
+
+Reject further filesystem jobs until that worker has exited and its owned
+resources have been released. Never launch a replacement for an unconfirmed
+worker. Register ownership immediately after launch, before reader-thread or
+IPC setup; setup failures also require cleanup or the unhealthy latch.
+Serialize jobs through a shared supervisor. An unhealthy shared supervisor can
+temporarily block every project; this explicit operational fault is distinct
+from a malformed note, which only invalidates its own project's scan.
+
+The [Windows feasibility findings](windows-filesystem-feasibility.md) explain
+the API limitation and synthetic evidence. Real provider cancellation, cleanup
+and no-hydration behavior remain unverified; these requirements do not assert
+that stage 2A established OneDrive conformance.
 
 ## Tools and envelopes
 
@@ -251,7 +282,7 @@ and known field name. More detailed safe local paths may be logged to stderr.
 | `MEMORY_NOT_FOUND` | Completed valid scan lacks ID; relist, never fall back across projects. |
 | `MEMORY_INELIGIBLE` | Unique note exists but lifecycle disallows serving; no body. |
 | `MEMORY_CHANGED` | Eligible current note differs from expected version; relist. |
-| `INTERNAL_ERROR` | Unexpected failure; sanitized diagnostic, no partial data. |
+| `INTERNAL_ERROR` | Unexpected failure or unconfirmed worker cleanup; sanitized diagnostic, no partial data. Cleanup-pending blocks new jobs until owned resources are released. |
 
 Precedence: validate arguments, resolve mapping, check root, scan, then perform
 ID lookup/eligibility/version checks. During a scan, hard limits, scope failure
