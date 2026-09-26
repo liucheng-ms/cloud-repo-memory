@@ -13,7 +13,7 @@ import threading
 import unittest
 from unittest.mock import Mock, patch
 
-import winfs
+from cloud_repo_memory import winfs
 from winfs import Refusal, Root, scan
 from supervisor import Supervisor
 
@@ -88,7 +88,7 @@ class FilesystemTests(unittest.TestCase):
         self.fixture.file("project-sibling\\sentinel.md", SENTINEL)
 
     def refusal(self, code, operation, no_read=False):
-        with patch("winfs.ReadFile", wraps=winfs.ReadFile) as read:
+        with patch.object(winfs, "ReadFile", wraps=winfs.ReadFile) as read:
             with self.assertRaises(Refusal) as raised:
                 operation()
             self.assertEqual(raised.exception.code, code)

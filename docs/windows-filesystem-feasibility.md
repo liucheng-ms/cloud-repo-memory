@@ -8,6 +8,13 @@ review; NO GO for full OneDrive conformance or real-data rollout.** The small
 useful local NTFS primitives, not a finished storage adapter or MCP service.
 Do not mark stage 2A's real-device conditions passed.
 
+The primitives have since been promoted into the synthetic storage package;
+the harness imports that shared implementation. The 38-test stage-2A results
+below are historical baseline evidence. See the
+[storage-core report](synthetic-storage-core.md) for current installation,
+post-promotion regressions and measurements. This promotion does not resolve
+any real-OneDrive or blocked-platform condition.
+
 Recommend **Python with standard-library `ctypes` Win32 bindings** for the next
 bounded implementation step, provisionally. Python 3.10.6 x64 is already
 installed; it exposes the required Windows APIs without a native package,

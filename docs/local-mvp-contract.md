@@ -1,6 +1,9 @@
 # Local memory MVP contract v1
 
-Status: specified, not implemented or runtime-validated. This contract implements
+Status: specified; a synthetic-only callable storage subset is now implemented
+and exercised as documented in [storage-core evidence](synthetic-storage-core.md).
+MCP transport, actual OneDrive and full platform conformance remain unverified.
+This contract implements
 the design boundary in [ADR 0002](adr/0002-onedrive-local-memory.md), not the
 historical M0 interface in [mcp-tools.md](mcp-tools.md). The M0 manifest, corpus,
 and existing Kusto fixtures remain unchanged.
@@ -10,7 +13,9 @@ and existing Kusto fixtures remain unchanged.
 - [JSON Schema](../contracts/local-mvp-v1.schema.json): Draft 2020-12; select
   named `$defs` below. The root accepts the supported document shapes.
 - [Acceptance specification](../validation/local-mvp-acceptance.json):
-  synthetic examples and future runtime/evaluation cases, not executed results.
+  synthetic examples and runtime/evaluation specifications, not executed results.
+  Separate storage-core evidence records the executed subset without changing
+  this specification or its limits.
 - This document supplies filesystem, rendering, and cross-field rules that JSON
   Schema cannot express. Both artifacts are required for conformance.
 

@@ -1,0 +1,481 @@
+{
+  "synthetic_only": true,
+  "evaluator_only": true,
+  "os": "Windows-10-10.0.19045-SP0",
+  "python": "3.10.6",
+  "machine": "AMD64",
+  "pointer_bits": 64,
+  "filesystem": "local fixed NTFS (verified by every root open)",
+  "dependencies": {
+    "ruamel.yaml": "0.18.17",
+    "pytest": "8.4.2",
+    "jsonschema": "4.26.0"
+  },
+  "tokenizer": null,
+  "tokens": null,
+  "mcp_client_round_trip": null,
+  "agent_retrieval": "BLOCKED",
+  "onedrive_pilot": "BLOCKED",
+  "method": "First index after configuration plus 30 subsequent fresh workers; nearest-rank p95 (rank 29 of 30). Not a cold OS-cache claim.",
+  "corpora": [
+    {
+      "notes": 5,
+      "source_bytes": 6220,
+      "corpus_source_hash_in_filename_order": "sha256:bcb96e2b52962f094fedd45bd7eab56de183e94e62a40ac7a09ce7cafb2c10e6",
+      "configuration_ms": 203.0,
+      "index_utf8_bytes": 1541,
+      "index_version": "sha256:e1f7cf8431718d297a04cdf1020c343766b2a827f248bdd19a2c3aff531583af",
+      "samples": [
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 234.0,
+          "call_round_trip_ms": 234.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 234.0,
+          "call_round_trip_ms": 234.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 218.0,
+          "call_round_trip_ms": 218.0
+        },
+        {
+          "core_elapsed_ms": 235.0,
+          "call_round_trip_ms": 235.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 218.0,
+          "call_round_trip_ms": 218.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 235.0,
+          "call_round_trip_ms": 235.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 218.0,
+          "call_round_trip_ms": 218.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 218.0,
+          "call_round_trip_ms": 218.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        },
+        {
+          "core_elapsed_ms": 219.0,
+          "call_round_trip_ms": 219.0
+        },
+        {
+          "core_elapsed_ms": 203.0,
+          "call_round_trip_ms": 203.0
+        }
+      ],
+      "first_core_elapsed_ms": 219.0,
+      "subsequent_core_p95_ms": 235.0,
+      "subsequent_call_p95_ms": 235.0,
+      "scripted_storage_coverage_not_agent_retrieval": [
+        {
+          "case": "latency-paraphrase",
+          "scripted_required_ids_read": [
+            "kst-001",
+            "kst-002"
+          ]
+        },
+        {
+          "case": "code-to-log-correlation",
+          "scripted_required_ids_read": [
+            "kst-003"
+          ]
+        },
+        {
+          "case": "missing-recent-event",
+          "scripted_required_ids_read": [
+            "kst-001",
+            "kst-004"
+          ]
+        },
+        {
+          "case": "historical-data",
+          "scripted_required_ids_read": [
+            "kst-005"
+          ]
+        },
+        {
+          "case": "missing-scope",
+          "scripted_required_ids_read": [
+            "kst-001",
+            "kst-002"
+          ]
+        },
+        {
+          "case": "unknown-topic",
+          "scripted_required_ids_read": []
+        }
+      ],
+      "index_byte_target_pass": true
+    },
+    {
+      "notes": 100,
+      "source_bytes": 1048576,
+      "corpus_source_hash_in_filename_order": "sha256:f194780f325b7005dd7d9921702e9998efe0221e9908233a8a881f3d873ff904",
+      "configuration_ms": 188.0,
+      "index_utf8_bytes": 43004,
+      "index_version": "sha256:1e6784f648f70255c8e81e9ca3f25f6aa17619d1fdd797d5b7871e083b871248",
+      "samples": [
+        {
+          "core_elapsed_ms": 687.0,
+          "call_round_trip_ms": 687.0
+        },
+        {
+          "core_elapsed_ms": 688.0,
+          "call_round_trip_ms": 688.0
+        },
+        {
+          "core_elapsed_ms": 656.0,
+          "call_round_trip_ms": 656.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 656.0,
+          "call_round_trip_ms": 656.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 671.0,
+          "call_round_trip_ms": 671.0
+        },
+        {
+          "core_elapsed_ms": 704.0,
+          "call_round_trip_ms": 704.0
+        },
+        {
+          "core_elapsed_ms": 687.0,
+          "call_round_trip_ms": 687.0
+        },
+        {
+          "core_elapsed_ms": 656.0,
+          "call_round_trip_ms": 656.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 688.0,
+          "call_round_trip_ms": 688.0
+        },
+        {
+          "core_elapsed_ms": 656.0,
+          "call_round_trip_ms": 656.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 687.0,
+          "call_round_trip_ms": 687.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 688.0,
+          "call_round_trip_ms": 688.0
+        },
+        {
+          "core_elapsed_ms": 671.0,
+          "call_round_trip_ms": 671.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 688.0,
+          "call_round_trip_ms": 688.0
+        },
+        {
+          "core_elapsed_ms": 687.0,
+          "call_round_trip_ms": 687.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 688.0,
+          "call_round_trip_ms": 688.0
+        },
+        {
+          "core_elapsed_ms": 687.0,
+          "call_round_trip_ms": 687.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 672.0,
+          "call_round_trip_ms": 672.0
+        },
+        {
+          "core_elapsed_ms": 687.0,
+          "call_round_trip_ms": 687.0
+        }
+      ],
+      "first_core_elapsed_ms": 687.0,
+      "subsequent_core_p95_ms": 688.0,
+      "subsequent_call_p95_ms": 688.0,
+      "index_byte_target_pass": true,
+      "first_scan_target_pass": true,
+      "subsequent_p95_target_pass": false
+    },
+    {
+      "notes": 200,
+      "source_bytes": 2097152,
+      "corpus_source_hash_in_filename_order": "sha256:07d4f7825e3a302f55b3d0fa64989821fc5ebae672c790cdf9387f17529f5949",
+      "configuration_ms": 187.0,
+      "index_utf8_bytes": 85904,
+      "index_version": "sha256:bdc147ce013a17056be0e301fd3615731a9d7bd5b22fdd9ae8b58ecf9b43b996",
+      "samples": [
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1172.0,
+          "call_round_trip_ms": 1172.0
+        },
+        {
+          "core_elapsed_ms": 1172.0,
+          "call_round_trip_ms": 1172.0
+        },
+        {
+          "core_elapsed_ms": 1172.0,
+          "call_round_trip_ms": 1172.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1172.0,
+          "call_round_trip_ms": 1172.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1157.0,
+          "call_round_trip_ms": 1157.0
+        },
+        {
+          "core_elapsed_ms": 1187.0,
+          "call_round_trip_ms": 1187.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1141.0,
+          "call_round_trip_ms": 1141.0
+        },
+        {
+          "core_elapsed_ms": 1171.0,
+          "call_round_trip_ms": 1171.0
+        },
+        {
+          "core_elapsed_ms": 1157.0,
+          "call_round_trip_ms": 1157.0
+        },
+        {
+          "core_elapsed_ms": 1172.0,
+          "call_round_trip_ms": 1172.0
+        },
+        {
+          "core_elapsed_ms": 1171.0,
+          "call_round_trip_ms": 1171.0
+        },
+        {
+          "core_elapsed_ms": 1141.0,
+          "call_round_trip_ms": 1141.0
+        },
+        {
+          "core_elapsed_ms": 1172.0,
+          "call_round_trip_ms": 1172.0
+        },
+        {
+          "core_elapsed_ms": 1187.0,
+          "call_round_trip_ms": 1187.0
+        },
+        {
+          "core_elapsed_ms": 1141.0,
+          "call_round_trip_ms": 1141.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1141.0,
+          "call_round_trip_ms": 1141.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1141.0,
+          "call_round_trip_ms": 1141.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1141.0,
+          "call_round_trip_ms": 1141.0
+        },
+        {
+          "core_elapsed_ms": 1187.0,
+          "call_round_trip_ms": 1187.0
+        },
+        {
+          "core_elapsed_ms": 1156.0,
+          "call_round_trip_ms": 1156.0
+        },
+        {
+          "core_elapsed_ms": 1172.0,
+          "call_round_trip_ms": 1172.0
+        },
+        {
+          "core_elapsed_ms": 1203.0,
+          "call_round_trip_ms": 1203.0
+        },
+        {
+          "core_elapsed_ms": 1187.0,
+          "call_round_trip_ms": 1187.0
+        }
+      ],
+      "first_core_elapsed_ms": 1156.0,
+      "subsequent_core_p95_ms": 1187.0,
+      "subsequent_call_p95_ms": 1187.0,
+      "over_ceiling": {
+        "notes": 201,
+        "code": "LIMIT_EXCEEDED",
+        "scan_complete": false
+      }
+    }
+  ]
+}

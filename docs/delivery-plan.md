@@ -5,7 +5,8 @@
 The user selected the local-first MVP on 2026-09-26: company OneDrive
 synchronizes Markdown; each device runs a local, read-only stdio MCP server.
 ADR 0002 remains the architecture baseline. The repository currently contains
-design and synthetic fixtures, not a working server.
+design, synthetic fixtures and a callable synthetic storage core, not a working
+MCP server.
 
 The coordinator owns scope, shared contracts, integration, and acceptance.
 Use synthetic data until storage, devices, sharing, and agent/model processing
@@ -158,3 +159,23 @@ real OneDrive folders, claim full platform conformance, add search/vector
 storage, or register clients. Packaging/runtime support and actual stdio MCP
 integration follow coordinator review of the storage core. Windows-only NTFS
 support and the current sharing-mode restrictions must remain explicit.
+
+### Synthetic storage-core delivery
+
+The bounded callable storage implementation is now available for review; see
+[setup, evidence and remaining gates](synthetic-storage-core.md). It is not an
+MCP server. Shared Win32 and supervisor primitives replace runtime/prototype
+copies, with race/stall injection confined to the validation harness.
+
+The final callable suite reports 223 passed and seven declared platform/pilot
+skips. The inherited Windows harness separately retains 31 passing tests and
+seven actual symlink-privilege blocks. Stage 2A remains CONDITIONAL GO.
+At 100 notes / 1 MiB, the generated index is 43,004 bytes; first scan 594 ms
+passes the provisional 1,000-ms target, but 30 subsequent scans have p95
+594 ms, missing 500 ms after one bounded parsing optimization (before: 688 ms).
+No limit/cache/filesystem policy was weakened to meet the target.
+This miss requires coordinator review, not an implicit scope expansion.
+
+Python 3.10.6 remains an experimental development environment. Basic editable/
+wheel packaging does not settle production runtime support. Actual MCP clients,
+tokenizer results, OneDrive behavior and two-device pilots remain blocked.
