@@ -60,9 +60,10 @@ class Supervisor:
         process, reader = self.pending
         if process.poll() is None:
             return False
-        reader.join(reader_wait)
-        if reader.is_alive():
-            return False
+        if reader is not None and reader.ident is not None:
+            reader.join(reader_wait)
+            if reader.is_alive():
+                return False
         process.stdout.close()
         self.pending = None
         return True
@@ -72,12 +73,9 @@ class Supervisor:
             return {"ok": False, "code": "INTERNAL_ERROR", "cleanup_confirmed": False,
                     "supervisor_state": "cleanup-pending"}
         started = time.monotonic()
-        process = subprocess.Popen(
-            [sys.executable, "-B", str(Path(__file__).resolve()), "--worker", mode, root],
-            stdout=subprocess.PIPE, text=True, encoding="utf-8",
-            stdin=subprocess.DEVNULL,
-        )
         messages = queue.Queue()
+        scan_end, file_end = started + SCAN_SECONDS, None
+        answer = None
 
         def receive():
             try:
@@ -88,12 +86,20 @@ class Supervisor:
             finally:
                 messages.put({"kind": "eof"})
 
-        reader = threading.Thread(target=receive, daemon=True)
-        reader.start()
-        self.pending = process, reader
-        scan_end, file_end = started + SCAN_SECONDS, None
-        answer = None
+        process = subprocess.Popen(
+            [sys.executable, "-B", str(Path(__file__).resolve()), "--worker", mode, root],
+            stdout=subprocess.PIPE, text=True, encoding="utf-8",
+            stdin=subprocess.DEVNULL,
+        )
+        self.pending = process, None
         try:
+            try:
+                reader = threading.Thread(target=receive, daemon=True)
+                self.pending = process, reader
+                reader.start()
+            except (RuntimeError, MemoryError, OSError):
+                answer = {"ok": False, "code": "INTERNAL_ERROR",
+                          "supervisor_state": "reader-unavailable"}
             while answer is None:
                 now = time.monotonic()
                 deadline = min(scan_end, file_end if file_end is not None else scan_end)

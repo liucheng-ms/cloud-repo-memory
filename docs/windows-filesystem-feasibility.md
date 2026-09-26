@@ -43,9 +43,10 @@ PowerShell 7.6.6, local fixed-drive **NTFS**. Each root check queries
 The suite does not require administrator privileges. Junction creation uses
 `pwsh -NoProfile` with `New-Item -ItemType Junction` on exact fixture paths.
 
-Final recorded run: **36 tests, 29 PASS, 7 skipped/BLOCKED, zero failures/errors,
-18.183 seconds**. Test names are the reproducible evidence identifiers in the
-matrix below. The seven skips are actual `os.symlink` failures with WinError
+Final recorded run after the lifecycle review fix: **38 tests, 31 PASS,
+7 skipped/BLOCKED, zero failures/errors, 19.226 seconds**. Test names are the
+reproducible evidence identifiers in the matrix below. The seven skips are
+actual `os.symlink` failures with WinError
 1314, not assumed failures or substitute junction results.
 
 Temporary files and junctions were removed using the exact fixture ledger.
@@ -146,6 +147,8 @@ validation. Policy-only tests are identified explicitly.
 | 2-second file and 5-second scan synthetic stalls | PASS | `synthetic_file_and_scan_stalls_cleanup_and_recovery`; real pinned handles plus synthetic sleep, worker terminated, file writable afterward |
 | Reject late successful result | PASS | `late_success_discarded`; injected expired operation timestamp followed by a success message, no files published |
 | Cleanup-pending stops additional workers | PASS | `cleanup_pending_latches_without_respawn`: **policy mock**, 100 rejected calls and zero subprocess launches |
+| Reader construction/start failure does not abandon workers | PASS | `reader_initialization_failure_cleans_real_workers_before_retry`: injected failure at each point, three actual workers per point exited/pipe closed before retry; normal job then succeeds |
+| Reader initialization failure with unconfirmed exit retains ownership | PASS | `reader_initialization_failure_retains_unconfirmed_worker`: **policy mock** at both failure points, one launch/terminate/wait, 100 additional refusals without respawn, successful reaping after exit confirmation |
 | No repeated-job resource growth on normal exit | PASS | `repeated_jobs_do_not_accumulate_resources`; 10 jobs, parent handles 145 before/145 after, one thread before/after |
 | Driver-stalled worker exit, hard real-time response/cleanup | BLOCKED | Windows cannot guarantee cancellation/exit latency; synthetic sleeps are not provider/kernel stalls |
 | Other filesystems, volume-mount fixtures, ACL denial, case-sensitive NTFS directories, mapped-file writers | BLOCKED | Not exercised; no platform-wide or hostile same-user guarantee |
@@ -191,20 +194,35 @@ reader ownership, returns `INTERNAL_ERROR` with prototype-local
 `supervisor_state: "cleanup-pending"`, and refuses further jobs. It only clears
 the latch after that same process and reader are confirmed finished. No
 replacement worker, orphan-and-respawn loop or unlimited abandoned workers.
+Ownership is registered immediately after process launch, before reader
+construction/start; both operations are inside the cleanup-protected region.
+Their resource failures produce an explicit `INTERNAL_ERROR` with prototype-local
+`supervisor_state: "reader-unavailable"` when cleanup succeeds, or
+`"cleanup-pending"` when it does not. Reaping permits an absent or unstarted
+reader and never joins a thread that has not started.
 The prototype is synchronous/single-caller; future MCP dispatch must serialize
 jobs rather than concurrently call this supervisor.
+
+Coordinator review found the original implementation registered ownership only
+after `Thread.start`, allowing initialization failure to abandon a launched
+worker. This was fixed before gate approval. The focused four-test lifecycle
+run passed in 2.095 seconds; the complete updated run is recorded above.
+The new regressions inject both constructor and start failures, verify six
+actual worker exits/closed pipes across safe retries, and separately mock
+unconfirmed exit to verify the no-respawn latch and eventual cleanup. Those
+mocks remain distinct from real driver-stall evidence.
 
 Final run measurements (milliseconds, not SLAs):
 
 | Case | Failure/success decision from job start | Return including cleanup | Exit/resources confirmed |
 | --- | ---: | ---: | --- |
-| Ordinary one-note job | 141 | 156 | Yes |
-| Synthetic file stall, first | 2,157 | 2,157 | Yes; `FILE_UNAVAILABLE` |
-| Synthetic file stall, second | 2,140 | 2,156 | Yes; `FILE_UNAVAILABLE` |
-| Synthetic whole-scan stall | 5,015 | 5,015 | Yes; `LIMIT_EXCEEDED` |
+| Ordinary one-note job | 156 | 156 | Yes |
+| Synthetic file stall, first | 2,172 | 2,172 | Yes; `FILE_UNAVAILABLE` |
+| Synthetic file stall, second | 2,156 | 2,156 | Yes; `FILE_UNAVAILABLE` |
+| Synthetic whole-scan stall | 5,016 | 5,016 | Yes; `LIMIT_EXCEEDED` |
 
-The file-stall numbers include approximately 140-157 ms of worker startup
-before the file operation begins. The observed 5,015-ms scan decision itself
+The file-stall numbers include approximately 156-172 ms of worker startup
+before the file operation begins. The observed 5,016-ms scan decision itself
 demonstrates why this is not an exact 5,000-ms response guarantee. Timer
 granularity, scheduling, launch and IPC latency matter. Cancellation request,
 failure decision, worker exit and resources released are separate observations.

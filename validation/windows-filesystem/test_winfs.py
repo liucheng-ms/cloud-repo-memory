@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 import threading
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import winfs
 from winfs import Refusal, Root, scan
@@ -418,6 +418,76 @@ class FilesystemTests(unittest.TestCase):
                 self.assertFalse(answer["cleanup_confirmed"])
                 self.assertEqual(answer["supervisor_state"], "cleanup-pending")
             launch.assert_not_called()
+
+    def test_reader_initialization_failure_cleans_real_workers_before_retry(self):
+        self.fixture.file("project\\note.md")
+        real_popen = subprocess.Popen
+        for failure in ("constructor", "start"):
+            with self.subTest(failure=failure):
+                supervisor = Supervisor()
+                processes = []
+
+                def launch(*args, **kwargs):
+                    process = real_popen(*args, **kwargs)
+                    processes.append(process)
+
+                    def cleanup():
+                        if process.poll() is None:
+                            process.terminate()
+                        process.wait(timeout=1)
+                        process.stdout.close()
+
+                    self.addCleanup(cleanup)
+                    return process
+
+                target = ("supervisor.threading.Thread" if failure == "constructor"
+                          else "supervisor.threading.Thread.start")
+                with patch("supervisor.subprocess.Popen", side_effect=launch), patch(
+                        target, side_effect=RuntimeError("synthetic reader failure")):
+                    for _ in range(3):
+                        answer = supervisor.run(str(self.root), "stall-scan")
+                        self.assertFalse(answer["ok"], answer)
+                        self.assertEqual(answer["code"], "INTERNAL_ERROR")
+                        self.assertEqual(answer["supervisor_state"], "reader-unavailable")
+                        self.assertTrue(answer["cleanup_confirmed"])
+                        self.assertIsNone(supervisor.pending)
+                        self.assertIsNotNone(processes[-1].poll())
+                        self.assertTrue(processes[-1].stdout.closed)
+                self.assertEqual(len(processes), 3)
+                self.assertTrue(supervisor.run(str(self.root))["ok"])
+
+    def test_reader_initialization_failure_retains_unconfirmed_worker(self):
+        # Fault injection only, not a claim about real uncancellable kernel I/O.
+        for failure in ("constructor", "start"):
+            with self.subTest(failure=failure):
+                supervisor = Supervisor()
+                process = Mock()
+                process.poll.return_value = None
+                process.wait.side_effect = subprocess.TimeoutExpired("synthetic worker", 0.5)
+                target = ("supervisor.threading.Thread" if failure == "constructor"
+                          else "supervisor.threading.Thread.start")
+                with patch("supervisor.subprocess.Popen", return_value=process) as launch, patch(
+                        target, side_effect=RuntimeError("synthetic reader failure")):
+                    answer = supervisor.run(str(self.root))
+                    self.assertEqual(answer["code"], "INTERNAL_ERROR")
+                    self.assertEqual(answer["supervisor_state"], "cleanup-pending")
+                    self.assertFalse(answer["cleanup_confirmed"])
+                    self.assertIs(supervisor.pending[0], process)
+                    reader = supervisor.pending[1]
+                    if failure == "constructor":
+                        self.assertIsNone(reader)
+                    else:
+                        self.assertIsNone(reader.ident)
+                    for _ in range(100):
+                        self.assertFalse(supervisor.run(str(self.root))["cleanup_confirmed"])
+                    launch.assert_called_once()
+                    process.terminate.assert_called_once()
+                    process.wait.assert_called_once()
+                    process.stdout.close.assert_not_called()
+                    process.poll.return_value = 1
+                    self.assertTrue(supervisor.reap())
+                    process.stdout.close.assert_called_once()
+                    self.assertIsNone(supervisor.pending)
 
     def test_late_success_discarded(self):
         answer = Supervisor().run(str(self.root), "late-result")
