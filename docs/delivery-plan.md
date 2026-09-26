@@ -5,8 +5,9 @@
 The user selected the local-first MVP on 2026-09-26: company OneDrive
 synchronizes Markdown; each device runs a local, read-only stdio MCP server.
 ADR 0002 remains the architecture baseline. The repository currently contains
-design, synthetic fixtures and a callable synthetic storage core, not a working
-MCP server.
+design, synthetic fixtures, a callable synthetic storage core and a stdio MCP
+adapter with synthetic protocol-client evidence, not a verified OneDrive or
+coding-agent integration.
 
 The coordinator owns scope, shared contracts, integration, and acceptance.
 Use synthetic data until storage, devices, sharing, and agent/model processing
@@ -218,3 +219,25 @@ Do not alter installed client settings or register the server automatically.
 Provide reproducible launch/setup instructions with placeholder synthetic paths.
 Real-client configuration, tokenizer evaluation, OneDrive files, and the
 second-device pilot remain separate, unapproved deployment activities.
+
+### Local stdio adapter delivery
+
+The bounded adapter is implemented and verified for synthetic fixed-NTFS data;
+see [setup and exact protocol/packaging evidence](local-stdio-adapter.md).
+The maintained official Python MCP SDK 1.30.0 supplies transport, initialization,
+typed routing and cancellation. Only the two frozen read-only tools are exposed.
+Schema-invalid arguments, including explicit null versions, retain contract
+errors; malformed protocol requests and unknown tools remain protocol errors.
+
+Real subprocess SDK ClientSession checks cover discovery, schemas/annotations,
+both result representations, failures, edits/deletions, cancellation/EOF and
+owned cleanup/recovery. Full suite: 312 passed, seven declared evidence skips.
+The retained Windows harness: 31 passed, seven actual symlink privilege blocks.
+Direct wheels and wheels rebuilt from sdist pass resource-byte parity and both
+launchers in isolated virtual environments and unrelated working directories.
+The single normative schema is packaged directly, not manually duplicated.
+
+No performance redesign or new latency claim: the previously measured 100-note
+p95 remains 594 ms against the unchanged provisional 500-ms target.
+No two coding-agent integrations, tokenizer/answer scoring, real OneDrive,
+real-provider cleanup or second-device pilot evidence is implied.

@@ -7,10 +7,10 @@ service or a completed two-device test. Follow [ADR 0002](adr/0002-onedrive-loca
 company OneDrive synchronizes Markdown; a read-only stdio MCP server on each
 device reads that device's local copy. There is no shared cloud MCP endpoint.
 
-The repository does not yet implement that runtime. Configuration syntax,
-installation packages, server launch commands, and supported client setup must
-come from the implementation; none are specified here. Storage preparation and
-synthetic file-sync checks can precede implementation. MCP checks cannot.
+The repository now implements a synthetic-only local stdio runtime; see
+[tested installation and launch commands](local-stdio-adapter.md). Its SDK
+protocol-client evidence does not validate OneDrive deployment or a coding-agent
+configuration. Client-specific registration and this manual pilot remain pending.
 
 The earlier [synthetic baseline](../validation/samples/kusto-memory/baseline-results.md)
 does not establish MCP retrieval, synchronization, or production readiness.

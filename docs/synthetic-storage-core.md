@@ -1,8 +1,10 @@
 # Synthetic local storage core
 
-Status: implemented for **owned synthetic data on Windows fixed NTFS**, ready
-for coordinator review. No MCP transport, tool registration, client integration,
-real OneDrive access or production-runtime support commitment. Stage 2A remains
+Status: implemented for **owned synthetic data on Windows fixed NTFS**.
+The separately documented [stdio adapter](local-stdio-adapter.md) now supplies
+MCP transport with subprocess protocol-client evidence. No coding-agent
+registration/integration, real OneDrive access or production-runtime support
+commitment. Stage 2A remains
 **CONDITIONAL GO**, not platform/OneDrive conformance.
 
 ## Setup and callable interface
@@ -47,12 +49,14 @@ Restart/recreate the store for configuration changes.
 The two methods return local-v1 output objects, including observations on errors.
 Missing/malformed project/ID values and extra keyword fields return
 `INVALID_ARGUMENT`. Python `expected_version=None` means no precondition; a
-future MCP adapter must still reject explicit JSON null under the input schema.
-There is intentionally no `structuredContent`, `content` or `isError` transport
-wrapper yet. Source content remains untrusted data.
+stdio adapter rejects explicit JSON null under the normative input schema.
+The callable core intentionally has no `structuredContent`, `content` or `isError`
+wrapper; the separate adapter supplies it. Source content remains untrusted data.
 
-The editable package installs `ruamel.yaml` for safe YAML 1.2 parsing; pytest and
-jsonschema are test extras. The tested versions are Python **3.10.6**, ruamel.yaml
+The original core package used `ruamel.yaml` for safe YAML 1.2 parsing, with pytest
+and jsonschema test extras. The adapter now also installs the MCP SDK, AnyIO and
+jsonschema at runtime; see its setup document for current dependencies.
+The core delivery's tested versions were Python **3.10.6**, ruamel.yaml
 **0.18.17**, pytest **8.4.2**, jsonschema **4.26.0**, on Windows 10 build 19045
 AMD64/64-bit. `pure=True` deliberately selects the YAML parser's Python path.
 Package interpreter compatibility is not a production lifecycle/support promise.
@@ -227,8 +231,9 @@ real-client/OneDrive limits above remain in effect.
 
 ## Still blocked / next review
 
-The coordinator must review the remaining performance miss and the core before
-any MCP implementation. Do not automatically start transport/client work.
+The coordinator accepted the corrected synthetic core for the bounded stdio
+adapter assignment. The remaining performance miss is still open; protocol
+development did not authorize tuning, real-client setup or deployment.
 Real locally available/offline/partially hydrated OneDrive placeholders,
 recall-on-open, provider cancellation/cleanup, actual symlinks on an authorized
 host, ACL-denial cases, other/mounted filesystems, case-sensitive NTFS and

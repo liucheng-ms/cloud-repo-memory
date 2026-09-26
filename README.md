@@ -10,11 +10,13 @@ by stable ID. No hosted memory account, database, or vector search is required
 for this initial scope.
 
 This repository now contains a **synthetic-only Windows fixed-NTFS storage
-core** with callable `list_memory_index` and `get_memory` methods. It is **not
-a working MCP server or verified OneDrive integration**. OneDrive provides
+core and local stdio MCP adapter** exposing `list_memory_index` and `get_memory`.
+Real subprocess MCP SDK protocol-client checks pass; this is **not a verified
+coding-agent or OneDrive integration**. OneDrive provides
 file synchronization; it is not a live shared database.
 
-See [storage-core setup, API and measured limits](docs/synthetic-storage-core.md).
+See [stdio setup and protocol evidence](docs/local-stdio-adapter.md) and
+[storage-core setup, API and measured limits](docs/synthetic-storage-core.md).
 The provisional 100-note subsequent-scan p95 target remains missed (594 ms
 versus 500 ms). Real OneDrive, actual MCP clients, tokenizer measurements and
 the blocked Windows platform cases are still release gates.
@@ -26,6 +28,7 @@ the blocked Windows platform cases are still release gates.
 - [OneDrive deployment boundary and pilot runbook](docs/onedrive-deployment.md)
 - [Windows filesystem prototype and evidence limits](docs/windows-filesystem-feasibility.md)
 - [Synthetic storage core and repeatable measurements](docs/synthetic-storage-core.md)
+- [Local stdio adapter, packaging and protocol evidence](docs/local-stdio-adapter.md)
 - [OneDrive-backed local MVP decision](docs/adr/0002-onedrive-local-memory.md)
 - [MCP contract scope and original M0 reference](docs/mcp-tools.md)
 - [Synthetic Kusto memory pilot](validation/samples/kusto-memory/README.md)

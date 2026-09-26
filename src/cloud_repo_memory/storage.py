@@ -54,6 +54,15 @@ def _job(request: dict[str, Any]) -> dict[str, Any]:
 class MemoryStore:
     """Explicit project mappings; all instances share serialized worker ownership."""
 
+    @staticmethod
+    def reap_workers() -> bool:
+        """Release exited shared workers; false retains ownership and blocks new jobs.
+
+        Call off the event loop: the supervisor lock waits for any active call.
+        This never launches a worker or asserts completion of pending kernel I/O.
+        """
+        return _SUPERVISOR.reap()
+
     def __init__(self, configuration: object):
         try:
             self._projects = self._configure(configuration)

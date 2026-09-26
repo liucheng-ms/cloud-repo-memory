@@ -84,6 +84,22 @@ def test_reader_retained_until_finished():
     assert supervisor.reap()
 
 
+def test_public_reaper_retains_exact_worker_until_release():
+    supervisor = Supervisor()
+    process = Mock()
+    process.poll.return_value = None
+    supervisor.pending = process, None
+    with patch.object(storage, "_SUPERVISOR", supervisor):
+        assert MemoryStore.reap_workers() is False
+        assert supervisor.pending == (process, None)
+        process.stdout.close.assert_not_called()
+        process.poll.return_value = 0
+        assert MemoryStore.reap_workers() is True
+        assert supervisor.pending is None
+        process.stdout.close.assert_called_once()
+        process._handle.Close.assert_called_once()
+
+
 def test_shared_supervisor_serializes_jobs():
     supervisor = Supervisor()
     active = 0

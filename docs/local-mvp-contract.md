@@ -1,8 +1,9 @@
 # Local memory MVP contract v1
 
-Status: specified; a synthetic-only callable storage subset is now implemented
-and exercised as documented in [storage-core evidence](synthetic-storage-core.md).
-MCP transport, actual OneDrive and full platform conformance remain unverified.
+Status: specified; synthetic-only storage and stdio transport are implemented
+and exercised as documented in [storage-core evidence](synthetic-storage-core.md)
+and [protocol-client evidence](local-stdio-adapter.md). Actual coding-agent
+integrations, OneDrive and full platform conformance remain unverified.
 This contract implements
 the design boundary in [ADR 0002](adr/0002-onedrive-local-memory.md), not the
 historical M0 interface in [mcp-tools.md](mcp-tools.md). The M0 manifest, corpus,
