@@ -29,6 +29,7 @@ the blocked Windows platform cases are still release gates.
 - [Windows filesystem prototype and evidence limits](docs/windows-filesystem-feasibility.md)
 - [Synthetic storage core and repeatable measurements](docs/synthetic-storage-core.md)
 - [Local stdio adapter, packaging and protocol evidence](docs/local-stdio-adapter.md)
+- [Copilot CLI + Codex evaluation kit and blocked launch gates](docs/real-client-evaluation.md)
 - [OneDrive-backed local MVP decision](docs/adr/0002-onedrive-local-memory.md)
 - [MCP contract scope and original M0 reference](docs/mcp-tools.md)
 - [Synthetic Kusto memory pilot](validation/samples/kusto-memory/README.md)

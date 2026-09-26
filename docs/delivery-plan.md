@@ -277,3 +277,18 @@ be recorded, not inferred from SDK protocol tests.
 Only after that stage should an approved dedicated synthetic OneDrive folder
 be selected for provider and second-device observations. Never discover or
 ingest existing company knowledge to bypass a missing test environment.
+
+### Prepared client evaluation kit: no model launches
+
+The user selected Copilot CLI and Codex. The
+[bounded evaluation kit](real-client-evaluation.md) generates five synthetic
+local-v1 notes, separate evaluator records and twelve non-executable launch
+recipes with model placeholders. Installed help confirms session-level MCP
+addition and local trace mechanisms; these do not prove a clean client profile
+or an OS boundary around evaluator answers.
+
+Preparation and MCP SDK checks cover the generated corpus only. Actual launches
+remain blocked on reviewed models/settings, tools/hooks/instructions exposure,
+an enforced evaluator boundary or externally held expectations, and explicit
+launch/content-capture approval. No global configuration, credentials, real
+knowledge, client installation or model sessions are changed by preparation.
