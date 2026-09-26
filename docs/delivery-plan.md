@@ -186,3 +186,35 @@ errors. The corrective delivery records 296 passing contract/parser/fault tests,
 the same seven declared skips and the unchanged 31-pass/seven-symlink-block
 Windows harness. Separate refreshed parser-source measurement evidence keeps
 the 100-note p95 at 594 ms: still a miss, not a changed gate or tuning waiver.
+
+### Storage acceptance and MCP adapter assignment
+
+The coordinator integrated and reviewed both parser corrections, then reproduced
+296 passing storage/parser/fault cases with seven declared evidence skips, plus
+31 passing Windows cases and seven actual symlink-privilege blocks. The two
+reported correctness findings are resolved for the synthetic scope.
+
+Approve a bounded local stdio MCP adapter against this callable core. The
+594-ms p95 miss remains open against the unchanged provisional 500-ms target;
+it does not block protocol development, but must not be reported as passed.
+No additional performance redesign is authorized in the adapter workstream.
+
+The adapter must publish exactly the two read-only tools with the versioned
+input/output schemas, validate wire arguments before callable conversion
+(including rejecting explicit null where disallowed), and return matching
+structured and JSON-text content with correct error flags. Use a maintained MCP
+SDK, not a bespoke JSON-RPC stack. Package schemas so installed-wheel operation
+does not depend on a repository checkout. Keep stdout protocol-only and
+configuration failures explicit on stderr with nonzero exit.
+
+Acceptance for this step requires a real subprocess stdio session through an
+MCP protocol client: initialization, discovery, schema checks, successful reads,
+argument and domain errors, version/update/deletion behavior, disconnect and
+worker ownership/cleanup. Preserve serialized storage access without blocking
+protocol shutdown indefinitely. Synthetic protocol-client evidence is not two
+real coding-agent integrations or answer-quality evidence.
+
+Do not alter installed client settings or register the server automatically.
+Provide reproducible launch/setup instructions with placeholder synthetic paths.
+Real-client configuration, tokenizer evaluation, OneDrive files, and the
+second-device pilot remain separate, unapproved deployment activities.
