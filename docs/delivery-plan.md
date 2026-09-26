@@ -124,9 +124,12 @@ by privilege error 1314, and none failed. See the
 No real OneDrive files were accessed.
 
 Targeted code review found a worker-ownership gap if reader setup fails after
-process launch. A corrective change and regression coverage are required before
-the conditional synthetic-only implementation gate is approved. Passing the
-original suite does not waive this finding.
+process launch. The correction is now integrated: ownership is registered before
+reader setup, and absent/unstarted readers still undergo bounded cleanup or
+retain the unhealthy latch. Constructor/start failure regressions cover real
+worker cleanup and repeated-submission refusal under injected unconfirmed exit.
+The coordinator reran the corrected suite: 38 tests, 31 passed, seven blocked,
+zero failures/errors. The initial passing suite alone did not waive the finding.
 
 The coordinator accepted a contract clarification: 2-second file and 5-second
 scan limits are work budgets, not guarantees of kernel-I/O completion. Expired
@@ -139,3 +142,19 @@ Python with standard-library Win32 bindings is the provisional choice for the
 synthetic storage step, not a final production runtime/support commitment.
 Real OneDrive placeholder/hydration behavior, provider cleanup and the seven
 symlink cases remain release gates even after the local corrective work.
+
+### Next delivery: synthetic storage core
+
+The coordinator approves the bounded synthetic-only implementation gate.
+Implement project configuration, strict metadata parsing, generated indexes,
+version-conditional body reads, sanitized result envelopes and the filesystem
+worker integration against the current local v1 contract. Keep the interface
+independent of MCP transport so it can be exercised without a real client.
+Promote or share proven primitives rather than keeping divergent copies.
+
+The next delivery must include automated contract cases and measured synthetic
+corpus results, and preserve the worker-ownership regressions. It must not use
+real OneDrive folders, claim full platform conformance, add search/vector
+storage, or register clients. Packaging/runtime support and actual stdio MCP
+integration follow coordinator review of the storage core. Windows-only NTFS
+support and the current sharing-mode restrictions must remain explicit.
