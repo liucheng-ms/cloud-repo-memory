@@ -12,9 +12,20 @@ coordination branch, not yet delivered to `main`. The coordinator reproduced
 The guide documents manual updates and retirement without adding runtime writes
 or treating an editable approval label as proof of review.
 
-Routine Copilot setup is still in progress. Retrieval-quality evaluation remains
-follow-up work; no new model launch, real-knowledge access, global configuration
-change, release, or automatic merge is authorized by this checkpoint.
+The [routine Copilot setup workflow](local-stdio-adapter.md) is also reviewed
+and integrated locally. Its checkout-side helper creates only new explicit
+configuration and verifies the installed runtime with SDK discovery/index/get;
+it does not launch or register Copilot. Daily operator startup uses the installed
+runtime and external configuration without depending on the checkout.
+The coordinator reproduced 103 combined setup, evaluation-kit, stdio,
+supervisor and authoring cases without skips, including non-editable runtime
+import-origin verification. These are local synthetic checks, not a new
+coding-client run or retrieval-quality score.
+
+Both follow-ups remain on the local coordination branch, not pushed or merged.
+Retrieval-quality evaluation remains follow-up work; no new model launch,
+real-knowledge access, global configuration change, release, or automatic merge
+is authorized by this checkpoint.
 The performance miss and unverified platform behavior below remain unchanged.
 
 ## Delivery checkpoint: 2026-09-27
