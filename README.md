@@ -37,14 +37,13 @@ production-ready release.
 
 ## Follow-up: repeatable setup and note maintenance
 
-The local coordination branch now includes an explicit synthetic-only
+This delivery includes an explicit synthetic-only
 [Copilot setup workflow](docs/local-stdio-adapter.md) and
 [human-maintained note guide](docs/memory-authoring.md). Setup generates new
 external configuration and verifies the installed runtime through MCP SDK calls;
 it does not register a client or launch a model. The note template defaults to
 draft/pending, and the runtime remains read-only.
 
-These follow-ups are locally reviewed and committed, not yet merged into `main`.
 Real-client retrieval evaluation still requires separate approval; the earlier
 smoke observation and performance/platform limitations remain unchanged.
 

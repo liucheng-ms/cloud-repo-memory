@@ -6,14 +6,14 @@ Weekly delivery PR #3 is merged into `main`. The next bounded work prioritizes
 routine Copilot setup and human-maintained notes, not further cloud-sync trials.
 
 The [authoring guide](memory-authoring.md), fictional draft/pending template,
-and template/lifecycle checks are reviewed and integrated into the local
-coordination branch, not yet delivered to `main`. The coordinator reproduced
+and template/lifecycle checks are reviewed and integrated for this follow-up
+delivery. The coordinator reproduced
 250 passing authoring/metadata cases using isolated synthetic fixtures.
 The guide documents manual updates and retirement without adding runtime writes
 or treating an editable approval label as proof of review.
 
 The [routine Copilot setup workflow](local-stdio-adapter.md) is also reviewed
-and integrated locally. Its checkout-side helper creates only new explicit
+and integrated for delivery. Its checkout-side helper creates only new explicit
 configuration and verifies the installed runtime with SDK discovery/index/get;
 it does not launch or register Copilot. Daily operator startup uses the installed
 runtime and external configuration without depending on the checkout.
@@ -22,7 +22,8 @@ supervisor and authoring cases without skips, including non-editable runtime
 import-origin verification. These are local synthetic checks, not a new
 coding-client run or retrieval-quality score.
 
-Both follow-ups remain on the local coordination branch, not pushed or merged.
+The user requested repository delivery of both follow-ups on 2026-09-27.
+They form one reviewed change set for pull-request delivery.
 Retrieval-quality evaluation remains follow-up work; no new model launch,
 real-knowledge access, global configuration change, release, or automatic merge
 is authorized by this checkpoint.
