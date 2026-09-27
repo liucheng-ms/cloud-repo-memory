@@ -1,5 +1,26 @@
 # Personal OneDrive directory pilot
 
+## Coordinator acceptance and subsequent web observation
+
+The coordinator reviewed and integrated the pilot and its observer-ownership
+correction. All 22 local-only pilot regressions passed in the coordinator
+worktree after the correction; no live OneDrive sequence was repeated.
+Accept the reported local-directory read/update/delete/restore observations
+within the limits below, not general provider conformance.
+
+The user subsequently reported seeing all five files in OneDrive web. A supplied
+screenshot independently shows the `Memory-Synthetic-Test` folder with **5 items**
+and **Private** sharing. It does not show individual filenames, file contents,
+hashes, or upload completion times. Record folder visibility/count as screenshot
+evidence and individual-file visibility as user-reported evidence. The screenshot
+and unrelated account information are not copied into this repository.
+
+This establishes subsequent web visibility of the test folder, not exact
+cloud/local content equality, reverse synchronization, a second-device read,
+cloud-placeholder compatibility, or company-tenant behavior. Those remain
+separate gates; the five baseline files are retained without further automated
+reads or mutations.
+
 ## Result and evidence boundary
 
 **PASS for one bounded, single-device local-directory experiment, not OneDrive

@@ -27,6 +27,7 @@ the blocked Windows platform cases are still release gates.
 - [Local MVP v1 contract and retrieval targets](docs/local-mvp-contract.md)
 - [OneDrive deployment boundary and pilot runbook](docs/onedrive-deployment.md)
 - [Windows filesystem prototype and evidence limits](docs/windows-filesystem-feasibility.md)
+- [Personal OneDrive directory pilot and web visibility](docs/personal-onedrive-pilot.md)
 - [Synthetic storage core and repeatable measurements](docs/synthetic-storage-core.md)
 - [Local stdio adapter, packaging and protocol evidence](docs/local-stdio-adapter.md)
 - [Copilot CLI + Codex evaluation kit and blocked launch gates](docs/real-client-evaluation.md)
