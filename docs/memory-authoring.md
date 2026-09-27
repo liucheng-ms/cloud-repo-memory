@@ -27,7 +27,7 @@ No command here creates notes, changes client configuration, or accesses OneDriv
 ## Required frontmatter
 
 Start with an exact `---` line, one YAML 1.2 mapping, and a closing `---` line.
-All nine fields below are required; no additional fields are allowed.
+All eight fields below are required; no additional fields are allowed.
 `schema_version` is the integer `1`; all other values must be strings.
 
 | Field | Authoring rule |
