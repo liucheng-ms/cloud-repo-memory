@@ -46,6 +46,9 @@ production-ready release.
 3. See the [client evaluation kit](docs/real-client-evaluation.md) for synthetic
    fixture preparation and gated client recipes. Preparation does not launch
    models; new runs require separate approval.
+4. Follow the [human-maintained note guide](docs/memory-authoring.md) for a
+   fictional draft template, metadata rules, and manual update/retirement
+   workflows. The server remains read-only; lifecycle labels do not prove review.
 
 See [storage setup and measured limits](docs/synthetic-storage-core.md) for the
 callable API. The live OneDrive pilot is opt-in, not an installation step:

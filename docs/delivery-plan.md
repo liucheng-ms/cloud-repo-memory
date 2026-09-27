@@ -1,8 +1,25 @@
 # OneDrive memory delivery plan
 
+## Follow-up checkpoint: 2026-09-27
+
+Weekly delivery PR #3 is merged into `main`. The next bounded work prioritizes
+routine Copilot setup and human-maintained notes, not further cloud-sync trials.
+
+The [authoring guide](memory-authoring.md), fictional draft/pending template,
+and template/lifecycle checks are reviewed and integrated into the local
+coordination branch, not yet delivered to `main`. The coordinator reproduced
+250 passing authoring/metadata cases using isolated synthetic fixtures.
+The guide documents manual updates and retirement without adding runtime writes
+or treating an editable approval label as proof of review.
+
+Routine Copilot setup is still in progress. Retrieval-quality evaluation remains
+follow-up work; no new model launch, real-knowledge access, global configuration
+change, release, or automatic merge is authorized by this checkpoint.
+The performance miss and unverified platform behavior below remain unchanged.
+
 ## Delivery checkpoint: 2026-09-27
 
-This section supersedes earlier prospective status and delivery gates below;
+This section supersedes older prospective status and delivery gates below;
 those sections retain the decision and implementation history.
 
 The coordinator integrated the Windows filesystem prototype, storage core,
