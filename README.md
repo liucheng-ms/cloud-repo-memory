@@ -35,6 +35,18 @@ Routine client registration, broader retrieval evaluation, tokenizer measurement
 and blocked Windows platform cases remain follow-up work. This is not a
 production-ready release.
 
+## Follow-up: repeatable setup and note maintenance
+
+This delivery includes an explicit synthetic-only
+[Copilot setup workflow](docs/local-stdio-adapter.md) and
+[human-maintained note guide](docs/memory-authoring.md). Setup generates new
+external configuration and verifies the installed runtime through MCP SDK calls;
+it does not register a client or launch a model. The note template defaults to
+draft/pending, and the runtime remains read-only.
+
+Real-client retrieval evaluation still requires separate approval; the earlier
+smoke observation and performance/platform limitations remain unchanged.
+
 ## Start here
 
 1. Follow [installation, configuration and stdio launch](docs/local-stdio-adapter.md).
@@ -46,6 +58,9 @@ production-ready release.
 3. See the [client evaluation kit](docs/real-client-evaluation.md) for synthetic
    fixture preparation and gated client recipes. Preparation does not launch
    models; new runs require separate approval.
+4. Follow the [human-maintained note guide](docs/memory-authoring.md) for a
+   fictional draft template, metadata rules, and manual update/retirement
+   workflows. The server remains read-only; lifecycle labels do not prove review.
 
 See [storage setup and measured limits](docs/synthetic-storage-core.md) for the
 callable API. The live OneDrive pilot is opt-in, not an installation step:

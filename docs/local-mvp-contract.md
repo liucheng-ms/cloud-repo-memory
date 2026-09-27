@@ -88,7 +88,7 @@ approval: approved
 # Environment routing
 ```
 
-All nine fields are required, without defaults or string coercion.
+All eight fields are required, without defaults or string coercion.
 `schema_version` is integer 1; all others are strings. Title is 1–120 Unicode
 code points; summary/read_when are 1–280 each. Text must contain non-whitespace
 content, have no leading/trailing whitespace, and contain no C0/DEL controls,
