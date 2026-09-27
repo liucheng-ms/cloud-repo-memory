@@ -1,6 +1,7 @@
 # Copilot CLI + Codex synthetic evaluation kit
 
-Status: **prepared, not launched**. The user selected these two clients.
+Status: **kit prepared; subsequent bounded smoke completed with mixed results**.
+The user selected these two clients. The generator itself remains non-launching.
 This kit makes local-v1 inputs and twelve gated run recipes (six fresh sessions
 per client). It does not invoke a coding agent, choose a model, log in, register
 MCP servers, read user configuration/auth/history, or change global settings.
@@ -9,8 +10,38 @@ SDK `ClientSession` checks are protocol evidence, not real-agent runs.
 Baseline: reviewed synthetic MCP commit
 `2b9ee5c54d619c98fdb095d4e944a8886c1ec60f`. Keep the
 [contract](local-mvp-contract.md), historical fixtures, M0, and schema unchanged.
-The existing 594-ms p95 miss, OneDrive/provider behavior and second-device gates
-remain open. No runtime/performance redesign is included.
+The existing 594-ms p95 miss remains open. Provider and second-device behavior
+are unverified; the later [delivery scope decision](delivery-plan.md) delegates
+cloud synchronization to OneDrive rather than requiring further sync trials.
+No runtime/performance redesign is included.
+
+## Subsequent approved smoke: not a benchmark
+
+The user separately approved one current-environment synthetic attempt per
+client, using each client's default model by omitting model flags. These were
+derived recipes; the generator's original approval gates were not weakened.
+
+Copilot CLI **1.0.87-0** completed one user-operated interactive run. Local trace
+inspection observed model **gpt-5.6-sol**, medium reasoning, followed by
+`list_memory_index`, `get_memory(kst-001)`, and `get_memory(kst-002)`.
+Expected versions matched returned source versions, index entries, and fixture
+hashes. The answer cited both notes and used the synthetic production destination
+and latency query. The client exited normally with code zero after `/exit`.
+Individual MCP worker cleanup was not established for this client run.
+
+Codex **0.154.0** was launched once with its default model, existing
+authentication, read-only sandbox, and the same prompt. Connection timeouts and
+HTTP 401 errors prevented an answer within 120 seconds; the owned process tree
+was stopped. Actual model identity, MCP discovery/calls, citations, tokens, and
+individual worker cleanup remain unverified. No login repair or second launch
+was performed. Internal client reconnects were not additional operator launches.
+
+These observations are connectivity evidence, not isolated six-case scoring or
+a two-client quality comparison. Inherited profile/context isolation and token
+counts are unverified. Copilot reported an automatic editor key-binding change;
+its persistence was not inspected. Raw logs and machine-specific derived
+recipes remain private and are not committed. No further launches are authorized
+by this report; the preflight requirements below still apply to new runs.
 
 ## Prepare, without launching
 

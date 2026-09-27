@@ -1,10 +1,52 @@
 # OneDrive memory delivery plan
 
+## Delivery checkpoint: 2026-09-27
+
+This section supersedes earlier prospective status and delivery gates below;
+those sections retain the decision and implementation history.
+
+The coordinator integrated the Windows filesystem prototype, storage core,
+stdio MCP adapter, client evaluation kit, personal OneDrive pilot, and their
+review corrections into one delivery branch. The repository contains runtime,
+schemas, synthetic fixtures, automated checks, setup instructions, and sanitized
+findings. Account information, machine-specific live configuration, original
+client traces, and the user's OneDrive files are not delivery artifacts.
+
+One Copilot CLI synthetic case successfully retrieved the index and two
+version-matched notes and produced matching citations. Codex's single attempt
+was blocked by connectivity/authentication errors; no retry is authorized.
+The personal OneDrive directory pilot and subsequent user-confirmed web edit
+are documented in [the bounded pilot report](personal-onedrive-pilot.md).
+They do not establish a combined production/client/provider certification.
+
+The user explicitly closed cloud-sync validation as a project workstream:
+OneDrive owns synchronization and Microsoft authentication. Second-device
+arrival and provider synchronization tests are no longer prerequisites for this
+weekly delivery. This scope change does not turn unobserved Files On-Demand or
+platform behavior into a pass, change local error handling, or change the
+`cloud_freshness: unknown` contract.
+
+This week's scope is repository delivery, not additional implementation or
+experiments. Follow-up work is routine Copilot setup, retrieval-quality
+evaluation, and human-maintained note templates/validation. The 594-ms p95 miss
+against the provisional 500-ms target, incomplete platform coverage, and Codex
+blocker remain recorded. No new model run, OneDrive access, global configuration
+change, package release, or automatic PR merge is part of this handoff.
+
+The integrated local-only regression run for this handoff used
+`python -B -m pytest -q tests validation\windows-filesystem\test_winfs.py`:
+**378 passed, 14 skipped**. Seven skips are explicit unverified-evidence
+placeholders and seven are symlink cases blocked by Windows privilege error
+1314. The run did not access live OneDrive knowledge or launch coding agents.
+Retained second-device placeholders document missing evidence, not a reopened
+cloud-sync delivery gate.
+
 ## Confirmed scope
 
-The user selected the local-first MVP on 2026-09-26: company OneDrive
+The user selected the local-first MVP on 2026-09-26: initially company OneDrive
 synchronizes Markdown; each device runs a local, read-only stdio MCP server.
-ADR 0002 remains the architecture baseline. The repository currently contains
+ADR 0002 remains the architecture baseline. At the initial design checkpoint,
+the repository contained
 design, synthetic fixtures, a callable synthetic storage core and a stdio MCP
 adapter with synthetic protocol-client evidence, not a verified OneDrive or
 coding-agent integration.
@@ -14,7 +56,7 @@ Use synthetic data until storage, devices, sharing, and agent/model processing
 are approved. No tenant administration or credential collection is part of
 development.
 
-## Workstreams and dependencies
+## Original workstreams and dependencies
 
 | Stage | Owner | Deliverable | Exit gate |
 | --- | --- | --- | --- |

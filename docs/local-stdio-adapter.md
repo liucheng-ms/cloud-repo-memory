@@ -1,10 +1,13 @@
 # Synthetic local stdio MCP adapter
 
 Status: **implemented and verified with a real subprocess MCP SDK protocol
-client**, on owned synthetic Windows fixed-NTFS files only. This is not two
+client**, on owned synthetic Windows fixed-NTFS files. This is not two
 coding-agent integrations, retrieval/answer-quality evidence, OneDrive
-conformance or production-runtime support. Client-specific registration remains
-pending; no installed agent settings are read or changed.
+conformance or production-runtime support. Subsequent bounded
+[Copilot smoke](real-client-evaluation.md) and
+[personal OneDrive directory](personal-onedrive-pilot.md) observations are
+reported separately. Routine client registration remains follow-up work;
+the server does not discover or modify installed agent settings.
 
 ## Install and launch
 
