@@ -192,6 +192,28 @@ Final retained filenames and full baseline source versions:
 The [validation-only server observer](../validation/onedrive/observe_server.py)
 wrapped launch/job completion to record existing behavior; it did not inject
 delays, failures, timeout settings, storage results or cleanup states.
+**Post-pilot observer correction:** review found that its original launch wrapper
+wrote/flushed evidence before returning the spawned process to the supervisor.
+A logging failure at that point could leave a live worker unowned while being
+misreported as a cleaned-up spawn failure. The observer now allocates its
+in-memory record before spawning, returns the process without evidence I/O,
+and persists launch/job events only after the real supervisor returns, when
+cleanup is confirmed or the exact worker remains owned as pending. Buffered
+launch timestamps denote launch initiation; job timestamps denote supervisor
+return, preserving chronology independently of persistence time.
+
+Write/flush failures propagate explicitly rather than producing a successful
+observer result. An evidence-failure latch also prevents an exit-zero observer
+result if a server boundary catches the original logging exception.
+Local regressions inject both failures using the real
+supervisor and local subprocesses, covering confirmed cleanup and a mocked
+pending-cleanup latch with no replacement launch, with and without a server
+boundary catching the error. This corrects validation
+instrumentation only, not production runtime behavior. The historical live
+run had no evidence-write failure; its thirteen observed calls and metadata
+remain historical facts. **No live OneDrive access or rerun was performed for
+this correction**, and the five retained files were left untouched.
+
 The same observed server process remained alive across all edits and all
 13 calls. At 02:02:32.241686 its shutdown record reported code **0** and
 `pending: false`; the SDK observed exit **0** at 02:02:32.326282.
@@ -242,8 +264,12 @@ credentials, file IDs, volume IDs, or raw private logs.
 not OneDrive: explicit gates, existing/ambiguous targets, no overwrite, ledger
 before writes, unexpected entries, changed hashes/identities, redirect/unavailable
 policy, evidence separation, and the full real-SDK local lifecycle.
-Final local-only validation: **22 passed in 14.03 seconds** (14 pilot regressions
-and 8 existing client-kit regressions); no live sequence was repeated.
+Initial pilot local-only validation: **22 passed in 14.03 seconds** (14 pilot
+regressions and 8 existing client-kit regressions); no live sequence was repeated.
+Observer-correction validation: **22 passed in 10.83 seconds** in
+`tests\test_onedrive_pilot.py` (14 existing pilot cases and 8 logging-failure/
+cleanup/server-boundary combinations). All correction checks used local
+fixtures/subprocesses, not OneDrive.
 Run only those local regressions with:
 
 ```powershell

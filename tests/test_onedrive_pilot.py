@@ -1,9 +1,12 @@
 """Owned local NTFS tests only. Never select or discover a real OneDrive path."""
 
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 from types import SimpleNamespace
 
 import anyio
@@ -11,12 +14,17 @@ import pytest
 
 from cloud_repo_memory.metadata import parse, version
 from cloud_repo_memory import winfs
+from cloud_repo_memory.supervisor import Supervisor
 from support import REPO
 
 SPEC = importlib.util.spec_from_file_location(
     "onedrive_pilot", REPO / "validation" / "onedrive" / "pilot.py")
 pilot = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(pilot)
+OBSERVER_SPEC = importlib.util.spec_from_file_location(
+    "onedrive_observer", REPO / "validation" / "onedrive" / "observe_server.py")
+observer = importlib.util.module_from_spec(OBSERVER_SPEC)
+OBSERVER_SPEC.loader.exec_module(observer)
 
 
 @pytest.fixture
@@ -206,6 +214,116 @@ def test_write_failure_retains_partial_file_and_ownership(setup, monkeypatch):
     with pytest.raises(FileExistsError):
         pilot.Corpus(corpus.path, evidence).create()
     assert (corpus.path / name).exists()
+
+
+@pytest.mark.parametrize("failure", ["write", "flush"])
+@pytest.mark.parametrize("pending_cleanup", [False, True])
+@pytest.mark.parametrize("server_catches_error", [False, True])
+def test_observer_evidence_failure_preserves_worker_ownership(
+        fixture, monkeypatch, failure, pending_cleanup, server_catches_error):
+    supervisor = Supervisor()
+    original_run, original_reap = supervisor._run, supervisor.reap
+    original_launch, original_open = subprocess.Popen, Path.open
+    launched, answers, writes = [], [], []
+
+    class FailedEvidence(io.StringIO):
+        def write(self, text):
+            writes.append(json.loads(text))
+            # The evidence operation must occur AFTER real supervisor cleanup.
+            assert len(answers) == 1
+            assert answers[0]["cleanup_confirmed"] is (not pending_cleanup)
+            assert launched[0].poll() is not None
+            if failure == "write":
+                raise OSError(28, "Fictional evidence disk full.")
+            return super().write(text)
+
+        def flush(self):
+            if failure == "flush":
+                raise OSError(28, "Fictional evidence disk full.")
+            return super().flush()
+
+    def launch(command, **kwargs):
+        process = original_launch(command, **kwargs)
+        launched.append(process)
+        return process
+
+    def run(command):
+        result = original_run(command)
+        answers.append(result)
+        return result
+
+    def reap(reader_wait=0):
+        if pending_cleanup and supervisor.pending is not None:
+            return False
+        return original_reap(reader_wait)
+
+    ledger = fixture.base / "mocked-observer-ledger.jsonl"
+    stream = FailedEvidence()
+
+    def open_ledger(path, *args, **kwargs):
+        if path == ledger:
+            return stream
+        return original_open(path, *args, **kwargs)
+
+    def serve():
+        # A real local subprocess with no filesystem/provider work. It emits
+        # a real result, then waits so supervisor termination is observable.
+        script = (
+            "import json,time; "
+            "print(json.dumps({'kind':'result','at':time.monotonic(),'ok':True}),flush=True); "
+            "time.sleep(30)"
+        )
+        try:
+            supervisor.run([sys.executable, "-B", "-c", script,
+                            json.dumps({"operation": "probe"})])
+        except OSError:
+            if server_catches_error:
+                # Model a server boundary converting the exception to an error
+                # response and later returning a normal shutdown code.
+                return 0
+            raise
+        pytest.fail("Evidence failure was hidden by a successful observer return.")
+
+    monkeypatch.setattr(observer.storage, "_SUPERVISOR", supervisor)
+    monkeypatch.setattr(subprocess, "Popen", launch)
+    monkeypatch.setattr(supervisor, "_run", run)
+    monkeypatch.setattr(supervisor, "reap", reap)
+    monkeypatch.setattr(observer.server, "main", serve)
+    monkeypatch.setattr(Path, "open", open_ledger)
+    monkeypatch.setattr(sys, "argv", ["observer", "unused-config", str(ledger)])
+    try:
+        error_type = RuntimeError if server_catches_error else OSError
+        message = "Pilot observer evidence failed" if server_catches_error else "Fictional evidence disk full"
+        with pytest.raises(error_type, match=message) as caught:
+            observer.main()
+        if not server_catches_error:
+            assert caught.value.errno == 28
+        assert len(launched) == 1 and len(answers) == 1
+        assert answers[0].get("supervisor_state") != "spawn-unavailable"
+        assert len(writes) == 1 and writes[0]["event"] == "worker-launched"
+        process = launched[0]
+        assert process.poll() is not None
+        if pending_cleanup:
+            assert answers[0]["supervisor_state"] == "cleanup-pending"
+            assert supervisor.pending[0] is process
+            assert not process.stdout.closed
+            # The same real supervisor refuses replacement while ownership is retained.
+            rejected = original_run(["must-not-launch"])
+            assert rejected["supervisor_state"] == "cleanup-pending"
+            assert rejected["cleanup_confirmed"] is False
+            assert len(launched) == 1
+            assert supervisor.pending[0] is process
+        else:
+            assert answers[0]["ok"] is True
+            assert supervisor.pending is None
+            assert process.stdout.closed
+    finally:
+        for process in launched:
+            if process.poll() is None:
+                process.terminate()
+            process.wait(timeout=5)
+        assert original_reap(1)
+        assert supervisor.pending is None
 
 
 def test_real_sdk_lifecycle_on_owned_local_temp_only(setup):
