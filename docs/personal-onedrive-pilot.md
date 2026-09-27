@@ -18,8 +18,49 @@ and unrelated account information are not copied into this repository.
 This establishes subsequent web visibility of the test folder, not exact
 cloud/local content equality, reverse synchronization, a second-device read,
 cloud-placeholder compatibility, or company-tenant behavior. Those remain
-separate gates; the five baseline files are retained without further automated
-reads or mutations.
+separate gates. The five baseline files were retained with no further automated
+reads or mutations until the separately coordinated observation below.
+
+## Subsequent user web edit and local MCP observation
+
+On 2026-09-27, the user reported editing the first note in OneDrive web and
+subsequently confirmed its actual added line was `Hello World! This is a test`.
+The initially reported marker, `hello world xxx`, was not present. The coordinator
+performed a read-only SDK observation and a separate diagnostic body read;
+neither wrote to OneDrive. Four tool calls across two fresh MCP servers observed:
+
+- The index still contained five entries.
+- `environment-routing.md` (`kst-001`) had source version
+  `sha256:8e3e94f4c14322b8e9c1586bc218d8564cd9dacfb9fe9bf0a89f56e2483feaaa`.
+- A read using the original pilot version
+  `sha256:f0f0de92c05637c675a6cf3f8a999aa0dcd954e2d9b70242327bb03e82fc437e`
+  returned `MEMORY_CHANGED`.
+- The new index version was
+  `sha256:6af38c911dc79742d60f74c18bd8d0c03e0eb52312dab16801c39859c3bd1a4a`,
+  and its `kst-001` entry matched the current source version.
+- The diagnostic read returned that same source version. A line-level comparison
+  with the original synthetic body showed only an added blank line and the
+  user-confirmed text.
+
+The initial three-call observation was recorded at
+`2026-09-27T02:15:30.044516+00:00`. Its provisional marker check was not fully
+confirmed because it searched for the user's initially stated text; the
+subsequent diagnostic read and explicit user correction resolve that mismatch.
+Private local evidence retains the provisional result separately from the
+confirmation; no account details or screenshots are included here.
+
+Accept this as a bounded **user-reported web edit subsequently observed through
+local MCP**, using the historical pilot version as baseline. The user saved
+before a new baseline could be captured, so there is no immediate pre-edit
+snapshot, measured sync latency, independent observation of the web save, or
+byte-for-byte cloud/local comparison. Fresh servers were used; this observation
+does not establish same-server refresh after a cloud-originated edit. It does not
+establish second-device sync, Files On-Demand behavior, or worker-cleanup evidence.
+The runtime continues to report `cloud_freshness: unknown`.
+
+The user-edited note is retained without automatic restoration. The original
+local CRUD pilot below remains a separate experiment; its restored-final-state
+statement and one-run counts do not describe this later observation.
 
 ## Result and evidence boundary
 
