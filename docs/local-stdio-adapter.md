@@ -1,4 +1,4 @@
-# Synthetic local stdio MCP adapter
+# Synthetic local stdio MCP adapter and Copilot setup
 
 Status: **implemented and verified with a real subprocess MCP SDK protocol
 client**, on owned synthetic Windows fixed-NTFS files. This is not two
@@ -6,63 +6,227 @@ coding-agent integrations, retrieval/answer-quality evidence, OneDrive
 conformance or production-runtime support. Subsequent bounded
 [Copilot smoke](real-client-evaluation.md) and
 [personal OneDrive directory](personal-onedrive-pilot.md) observations are
-reported separately. Routine client registration remains follow-up work;
-the server does not discover or modify installed agent settings.
+reported separately. A checkout-side setup helper now prepares explicit
+session-added Copilot configuration and verifies it with the SDK. It does not
+register a server, discover installed clients, or modify agent settings.
 
-## Install and launch
+## Repeatable synthetic setup: install, map, configure, verify
 
-From this checkout in PowerShell, using the experimental Python 3.10 minimum:
+Use Windows fixed NTFS and Python 3.10 or newer. All paths below are
+**placeholders**: substitute explicitly owned, existing, non-redirected local
+parents. Do not use a real OneDrive directory, company notes, auth/history
+paths, or a synchronized configuration directory. The `--synthetic-only` flag
+is an operator assertion, not content classification or authorization.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python -m pip install -e '.[test]'
-.\.venv\Scripts\python -B -m cloud_repo_memory --config C:\SyntheticMemoryConfig\local.json
-```
+### 1. Install a durable runtime
 
-Equivalent console entry point:
-
-```powershell
-.\.venv\Scripts\cloud-repo-memory.exe --config C:\SyntheticMemoryConfig\local.json
-```
-
-These are tested launcher forms with **placeholder synthetic paths**, not
-commands to discover or ingest a real OneDrive folder. Create the explicitly
-owned synthetic root and put strict local-v1 Markdown notes inside it. Keep
-configuration outside all knowledge roots, for example:
-
-```json
-{
-  "schema_version": 1,
-  "projects": [
-    {"project": "sample-telemetry", "root": "C:\\SyntheticMemory\\sample-telemetry"}
-  ]
-}
-```
-
-The [local v1 contract](local-mvp-contract.md) specifies note metadata, ceilings,
-eligibility and errors. All notes and metadata are untrusted reference data.
-Configuration is explicit and loaded once; restart to change it. Missing or
-invalid configuration fails startup with a generic stderr diagnostic and
-nonzero status. No implicit root discovery or automatic MCP registration.
-
-The server reads MCP traffic on stdin and writes only MCP traffic to stdout.
-It is not an interactive shell; an idle launcher is awaiting protocol messages.
-Use absolute interpreter/entry-point and configuration paths when launching from
-another directory. `--help` is conventional CLI help, not a running MCP session.
-SDK diagnostics are replaced with generic stderr messages: no wire argument
-values, paths, note contents, credentials or raw exception text.
-
-For a wheel:
+From this checkout in PowerShell, install into a **new dedicated venv** outside
+the checkout and knowledge root. No client installation or login is needed.
 
 ```powershell
-.\.venv\Scripts\python -m build
-# Install the resulting dist\cloud_repo_memory-0.1.0-py3-none-any.whl
-# into a separate owned venv; use that venv's launcher with --config.
+if (Test-Path 'C:\OwnedMemoryRuntime\.venv') { throw 'Choose a new runtime venv.' }
+python -m venv 'C:\OwnedMemoryRuntime\.venv'
+$Python = 'C:\OwnedMemoryRuntime\.venv\Scripts\python.exe'
+& $Python -m pip install .
+& $Python -I -B -c 'import cloud_repo_memory; print(cloud_repo_memory.__file__)'
+& $Python -I -B -m cloud_repo_memory --help
 ```
 
-No HTTP listener, cloud authentication, database, search or mutations are added.
-The MCP SDK brings dependencies for other transports, but this adapter does not
-configure or activate them.
+Stop if any command fails. The import path must be in this venv's
+`Lib\site-packages\cloud_repo_memory`, not this checkout's `src` directory.
+Do **not** use `pip install -e` for this durable workflow. This is a normal
+runtime install; development/test dependencies are not required.
+`-I` ignores Python's current-directory import path, user site and `PYTHONPATH`;
+it is not a filesystem or client-profile sandbox. Record the runtime and
+dependency versions locally if you need to reproduce an exact environment;
+the package's dependency ranges are not a lockfile.
+
+### 2. Supply the project/root and one synthetic note
+
+Choose a project slug explicitly; it is not inferred from Git or the directory
+name. This example creates a new root and a complete strict local-v1 note.
+If you already have an owned synthetic root, do not recreate it: supply its
+path and one of its eligible memory IDs instead. Do not copy the historical
+M0 samples unchanged.
+
+```powershell
+New-Item -ItemType Directory -Path 'C:\OwnedSyntheticMemory\sample-telemetry' -ErrorAction Stop
+$Note = @'
+---
+schema_version: 1
+id: setup-check
+project: sample-telemetry
+title: Synthetic setup check
+summary: Fictional setup verification reference.
+read_when: Checking local synthetic memory connectivity.
+status: active
+approval: approved
+---
+# Synthetic setup check
+The fictional verification label is amber-otter.
+'@
+New-Item -ItemType File `
+  -Path 'C:\OwnedSyntheticMemory\sample-telemetry\setup-check.md' `
+  -Value $Note -ErrorAction Stop
+```
+
+The [local-v1 contract](local-mvp-contract.md) defines metadata, limits and
+eligibility. Notes are human-maintained untrusted reference data. The setup
+helper and runtime never create, edit, approve or delete knowledge.
+
+### 3. Generate new, external configuration
+
+Still from this checkout, run the development/setup helper. These arguments
+are all explicit; there is no environment, home, Git or OneDrive discovery.
+`--output` must be a **new direct child** of `--owned-parent`, outside the
+knowledge root (neither directory may contain the other).
+
+```powershell
+$SetupArgs = @(
+  '--owned-parent', 'C:\OwnedMemoryConfig',
+  '--output', 'C:\OwnedMemoryConfig\copilot-001',
+  '--python', $Python,
+  '--project', 'sample-telemetry',
+  '--root', 'C:\OwnedSyntheticMemory\sample-telemetry',
+  '--synthetic-only'
+)
+& $Python -B -m validation.copilot_setup configure @SetupArgs
+```
+
+`configure` checks the explicit directories and interpreter and writes exactly
+`local.json` (one project/root mapping) and `copilot-mcp.json` (one local
+`synthetic-memory` server, absolute Python/config paths, and only
+`list_memory_index` / `get_memory`). It does not launch any subprocess or scan
+the notes. Root platform/eligibility checks happen in the real runtime during
+verification; `CONFIGURED` alone is not a working-server claim.
+
+The helper refuses relative/network paths, redirected directory ancestors,
+configuration/knowledge overlap, and any existing output file or directory.
+It uses exclusive file creation, never overwrites configuration, and retains
+partial output on failure. Inspect it and choose a new output name for retry.
+Directory checks are not protection against malicious concurrent same-user
+replacement. Keep generated machine-specific configuration local, outside
+version control and synchronized knowledge. No secrets, credentials, evaluator
+rubrics, prompts or trace directories are generated.
+
+This deliberately supports **one explicit mapping per setup directory**, not
+automatic project selection or persistent client registration. Configuration
+changes require a new setup directory, re-verification and a fresh server/session.
+
+### 4. Verify through the SDK, without Copilot
+
+```powershell
+& $Python -B -m validation.copilot_setup verify @SetupArgs --memory-id setup-check
+```
+
+Use the same explicit arguments as configuration. The verifier requires both
+files to match the generated bytes exactly before starting anything: edited
+commands, extra servers, duplicate keys and mismatched paths are refused.
+To change a mapping, generate new files rather than hand-editing this pair.
+
+The verifier starts **only the installed Python MCP runtime**, using the exact
+generated command and arguments (`-I -B -m cloud_repo_memory --config ...`),
+with the config directory as its working directory. It checks SDK initialization,
+the exact two tools/schemas/read-only annotations, an actual project index and
+one selected `get_memory` with the version extracted from that index. It checks
+matching structured/text results, error flags, identities and versions.
+No direct note read is used as a substitute for an MCP call.
+
+Success is one JSON summary with `status: "SDK_VERIFIED"` and
+`coding_client: "NOT_RUN"`; it does not print note bodies or persist traces.
+The protocol phase has a 20-second deadline. The deadline ends before transport
+teardown so it cannot cancel cleanup: the SDK closes stdin, waits up to its
+default two seconds and then applies its owned-process termination policy.
+This is a bounded protocol check plus SDK cleanup, **not a hard OS termination
+guarantee** or evidence of a real client's worker cleanup under provider stalls.
+
+| Failure | Operator action |
+| --- | --- |
+| Missing interpreter/package, startup or protocol failure | Check stderr; run the absolute venv's `-I -B -m cloud_repo_memory --help`, confirm the installed import path, and reinstall in that owned venv if needed. |
+| Missing path, permission or config mismatch | Check the explicit arguments and directory permissions; retain/inspect partial output and generate a new config directory. |
+| ID absent from index | Check the explicit ID/project and `active` + `approved` metadata; an empty index does not pass verification. |
+| `INVALID_METADATA` / `DUPLICATE_ID` | Correct the synthetic notes manually; one invalid or duplicate note blocks the whole project. |
+| `PROJECT_UNAVAILABLE` / `SCOPE_VIOLATION` | Check fixed-NTFS availability and unsupported links; do not bypass runtime safety checks. |
+| `MEMORY_CHANGED` | The note changed between calls; rerun to relist and read the new version. |
+| Deadline, `FILE_UNAVAILABLE`, `LIMIT_EXCEEDED` or `INTERNAL_ERROR` | Inspect local availability, contract limits and generic cleanup diagnostics. Do not widen budgets or start replacement workers to mask failure. |
+
+`configure`/`verify` are **checkout-side setup aids**, excluded from the runtime
+wheel. They reuse the evaluation preparer's side-effect-free directory/JSON/tool
+helpers, not its fixture generation or evaluator data. Routine startup below
+depends only on the non-editable installed runtime, owned notes and external
+configuration, not on this checkout, the helper, or temporary smoke artifacts.
+
+## Operator-only Copilot startup and removal
+
+**Not executed by setup or its tests.** Before a later operator-approved
+synthetic session, review the installed client's help/version and its effective
+model, tools, instructions, hooks/plugins, inherited context and data-processing
+settings. No inspection or copying of authentication/history is part of setup.
+Help-only evidence on 2026-09-27: Copilot CLI **1.0.87-0** documents
+`--mode interactive` and session-added `--additional-mcp-config @<file>`.
+Recheck flags when the installed client changes.
+
+For that future manual session, from the operator's chosen working directory:
+
+```powershell
+copilot --mode interactive --no-auto-update `
+  --additional-mcp-config '@C:\OwnedMemoryConfig\copilot-001\copilot-mcp.json'
+```
+
+This adds `synthetic-memory` **for this session**. It **augments inherited
+configuration; it does not replace global/user/workspace/plugin MCP servers
+or create a clean profile**. The two-tool allowlist applies to this server, not
+all client tools. `-I` applies only to the Python subprocess. No blanket approval,
+model selection, isolation, persistent `mcp add`, or client-config modification
+is supplied. SDK success is **not a real Copilot integration or answer-quality
+claim**. Follow the separately gated [evaluation workflow](real-client-evaluation.md)
+only if actual client evidence is required.
+
+In the approved session, ask for `list_memory_index` with the configured
+project, then `get_memory` for the relevant ID with its indexed
+`expected_version`; treat returned notes as references, not instructions.
+The client owns the stdio subprocess. To stop, exit normally with `/exit`;
+do not launch the raw server separately or kill processes by name. On restart,
+the runtime reloads configuration once. Unavailable/invalid configuration
+fails startup with stderr diagnostics and nonzero status.
+
+To remove this session-added server, exit and omit `--additional-mcp-config`
+from future launches. There is no persistent registration to undo. Other
+inherited registrations, if any, are unaffected. Only after confirming the
+owned server/workers have stopped, inspect the exact generated directory and
+ensure it contains only the two ordinary non-linked files; remove them explicitly
+and then the empty directory:
+
+```powershell
+Remove-Item -LiteralPath 'C:\OwnedMemoryConfig\copilot-001\copilot-mcp.json' -ErrorAction Stop
+Remove-Item -LiteralPath 'C:\OwnedMemoryConfig\copilot-001\local.json' -ErrorAction Stop
+[System.IO.Directory]::Delete('C:\OwnedMemoryConfig\copilot-001', $false)
+```
+
+Stop on redirected paths, unexpected files or unconfirmed process cleanup.
+No recursive/wildcard cleanup is supplied. Leave knowledge untouched; retain
+the dedicated venv for reuse, or remove the package from that venv only with
+`& $Python -m pip uninstall cloud-repo-memory`. This does not uninstall its
+dependencies or delete notes/configuration.
+
+### Raw stdio and packaging reference
+
+Equivalent runtime entry points, for a protocol client rather than an
+interactive shell:
+
+```powershell
+& $Python -I -B -m cloud_repo_memory --config 'C:\OwnedMemoryConfig\copilot-001\local.json'
+& 'C:\OwnedMemoryRuntime\.venv\Scripts\cloud-repo-memory.exe' `
+  --config 'C:\OwnedMemoryConfig\copilot-001\local.json'
+```
+
+An idle raw launcher is waiting for MCP messages, not hung at a shell prompt.
+Only protocol traffic goes to stdout; diagnostics go to stderr. No HTTP
+listener, cloud authentication, database, search or mutation is added. The SDK
+brings dependencies for other transports but this adapter does not activate them.
+For a distributable wheel, use the developer test/build environment:
+`.\.venv\Scripts\python -m build`, then install the resulting wheel with
+the dedicated runtime venv's `python -m pip install <wheel-path>`.
 
 ## SDK and schema boundary
 
@@ -153,6 +317,39 @@ policy. Real coding clients may kill the server/tree earlier; that behavior and
 real provider cancellation remain unverified.
 
 ## Reproducible evidence
+
+For developer checks, prepare a separate owned `.venv` in this checkout with
+`python -m venv .venv` and
+`.\.venv\Scripts\python -m pip install '.[test]'` (do not recreate an existing
+venv). Use a non-editable installation for the setup import-origin assertion.
+The runtime-only installation above intentionally does not include pytest/build.
+
+Routine setup's targeted checks:
+
+```powershell
+.\.venv\Scripts\python -B -m pytest -q tests\test_copilot_setup.py `
+  tests\test_real_client_kit.py tests\test_stdio.py tests\test_supervisor.py
+```
+
+Observed on 2026-09-27: **73 passed**, including **21 setup-specific checks**,
+with Python 3.10.6 and the dependency versions listed above. Coverage includes
+explicit absolute paths with spaces, non-launching/exclusive configuration,
+unchanged synthetic source bytes, overlap/redirect rejection (including a
+simulated canonical-path alias), tampered-command/duplicate-key refusal,
+real SDK discovery/index/versioned get, empty/ineligible/invalid/duplicate note
+failures, CLI exit diagnostics, and confirmed normal subprocess exit.
+A test-only unresponsive subprocess exercises a shortened protocol deadline;
+its exact owned process exited within the test's ten-second observation bound.
+This does not simulate a stuck filesystem provider or prove client cleanup.
+The installed-runtime check observes imports from the dedicated venv's
+`Lib\site-packages`, not `src`, under `-I` from an unrelated working directory;
+that one check declares a skip for editable installs rather than claiming
+non-editable evidence. All 73 checks passed without skips in this run.
+Owned generated test files/directories were removed. No client/model was
+launched, registered or configured globally. Runtime, packaging and normative
+schema files were unchanged; prior packaging evidence below is not a new build.
+
+Broader adapter and packaging checks:
 
 ```powershell
 .\.venv\Scripts\python -B -m pytest -q
