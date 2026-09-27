@@ -1,0 +1,18 @@
+---
+schema_version: 1
+id: example-paper-lantern-checklist
+project: example-paper-lantern
+title: "Fictional checklist ownership"
+summary: "Placeholder for a human-maintained checklist ownership note."
+read_when: "Determining who maintains the fictional project's checklist."
+status: draft
+approval: pending
+---
+# Fictional checklist ownership
+
+This is a template, not project knowledge. A human must replace the fictional
+identity, navigation text and body before publishing it.
+
+Describe the verified fact or decision, its scope, and its limitations here.
+Include supporting references and a human review date in the body, not as
+additional frontmatter fields. Do not include secrets or evaluator answers.
